@@ -55,24 +55,11 @@ CMAKE_OPTIONS = \
 	-DVIRGIL_IOT_THREADSAFE=ON \
 	-DYIOT_OPENWRT=ON \
 
-
-define Package/libyiot/install
-	$(INSTALL_DIR) $(1)/lib
-	# $(CP) $(PKG_BUILD_DIR)/lib*.a $(1)/lib/
+define Build/InstallDev
+	$(CP) -f $(shell pwd)/src/iotkit/sdk/ipkg-install/* $(STAGING_DIR)/
+	mkdir -p  $(STAGING_DIR)/usr/lib/virgil/mbedtls/
+	$(CP) -f $(shell pwd)/src/iotkit/sdk/depends/installed/lib/*.a $(STAGING_DIR)/usr/lib/virgil/mbedtls/
 endef
-
-# define Package/libyiot-uboot/install
-# 	$(INSTALL_DIR) $(1)/lib
-# 	$(CP) $(PKG_BUILD_DIR)/lib*.a* $(1)/lib/
-# endef
-
-# define Build/InstallDev
-# 	# $(INSTALL_DIR) $(1)/usr/include
-# 	# $(CP) $(PKG_BUILD_DIR)/uci{,_config,_blob,map}.h $(1)/usr/include
-# 	# $(INSTALL_DIR) $(1)/usr/lib
-# 	# $(CP) $(PKG_BUILD_DIR)/libuci.so* $(1)/usr/lib
-# 	# $(CP) $(PKG_BUILD_DIR)/libucimap.a $(1)/usr/lib
-# endef
 
 $(eval $(call BuildPackage,libyiot))
 # $(eval $(call BuildPackage,libyiot-uboot))
