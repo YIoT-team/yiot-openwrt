@@ -58,7 +58,7 @@ CMAKE_OPTIONS = \
 
 define Package/libyiot/install
 	$(INSTALL_DIR) $(1)/lib
-	$(CP) $(PKG_BUILD_DIR)/lib*.a $(1)/lib/
+	# $(CP) $(PKG_BUILD_DIR)/lib*.a $(1)/lib/
 endef
 
 # define Package/libyiot-uboot/install
