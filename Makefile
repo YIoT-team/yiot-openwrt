@@ -43,8 +43,8 @@ endef
 #   TITLE:=YIoT Core library for U-BOOT
 # endef
 
-TARGET_CFLAGS += -I$(STAGING_DIR)/usr/include -fpie
-TARGET_LDFLAGS += -L$(STAGING_DIR)/usr/lib -pie
+TARGET_CFLAGS += -I$(STAGING_DIR)/usr/include -fpie -ffunction-sections -fdata-sections
+TARGET_LDFLAGS += -L$(STAGING_DIR)/usr/lib -L$(STAGING_DIR)/usr/lib/virgil/mbedtls -pie -Wl,--gc-sections
 
 CMAKE_OPTIONS = \
 	-DVIRGIL_IOT_CONFIG_DIRECTORY=$(shell pwd)/src/iotkit/sdk/config/pc \
