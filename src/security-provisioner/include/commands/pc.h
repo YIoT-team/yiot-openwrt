@@ -20,9 +20,9 @@
 #ifndef YIOT_PC_H
 #define YIOT_PC_H
 
-#include <virgil/iot/status_code/status_code.h>
-#include <virgil/iot/protocols/snap.h>
 #include <common/protocols/snap/user/user-structs.h>
+#include <virgil/iot/protocols/snap.h>
+#include <virgil/iot/status_code/status_code.h>
 
 #ifdef __cplusplus
 using namespace VirgilIoTKit;

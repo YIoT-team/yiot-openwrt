@@ -25,7 +25,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "helpers/file-cache.h"
+#include "common/helpers/file-cache.h"
 
 #define VS_FILE_CACHE_SZ (40)
 #define VS_FILE_CACHE_MAX_FILE_SZ (2 * 1024 * 1024)

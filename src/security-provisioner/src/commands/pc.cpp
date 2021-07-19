@@ -19,12 +19,12 @@
 
 #include <arpa/inet.h>
 
-#include <iostream>
 #include <filesystem>
+#include <iostream>
 
-#include "common/helpers/timer.h"
 #include "common/helpers/command.h"
 #include "common/helpers/settings.h"
+#include "common/helpers/timer.h"
 
 #include "commands/pc.h"
 

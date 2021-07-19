@@ -20,9 +20,9 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "helpers/app-storage.h"
-#include "helpers/file-io.h"
-#include "sdk-impl/storage/storage-nix-impl.h"
+#include "common/helpers/app-storage.h"
+#include "common/helpers/file-io.h"
+#include "common/iotkit-impl/storage/storage-nix-impl.h"
 
 static const char *_tl_dir = "trust_list";
 static const char *_firmware_dir = "firmware";

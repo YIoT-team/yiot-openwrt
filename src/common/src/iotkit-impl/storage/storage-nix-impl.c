@@ -25,7 +25,7 @@
 
 #include <global-hal.h>
 
-#include "sdk-impl/storage/storage-nix-impl.h"
+#include "common/iotkit-impl/storage/storage-nix-impl.h"
 
 #define VS_FIO_PROFILE_WRITE 0
 #define VS_FIO_PROFILE_GETLEN 0

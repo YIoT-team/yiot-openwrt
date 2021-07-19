@@ -17,53 +17,51 @@
 //    Lead Maintainer: Roman Kutashenko <kutashenko@gmail.com>
 //  ────────────────────────────────────────────────────────────
 
-#include <iostream>
-
-#include "common/helpers/command.h"
-#include "common/helpers/settings.h"
-#include "common/helpers/timer.h"
-
-#include "commands/reset.h"
-
-#include <virgil/iot/protocols/snap/cfg/cfg-private.h>
-
-static KSTimer _processingDelayer;
-static const auto kDelayMs = std::chrono::milliseconds(200);
+#include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
 
 //-----------------------------------------------------------------------------
-vs_status_e
-ks_snap_cfg_reset_cb(const vs_netif_t *netif, vs_mac_addr_t sender_mac) {
-    auto command = std::string(ks_settings_scripts_dir()) + "/yiot-reset-rpi.sh";
+void vs_impl_msleep(size_t msec)
+{
+    usleep(msec * 1000);
+}
 
-    bool res = _processingDelayer.add(kDelayMs, [netif, sender_mac, command]() -> void {
-        Command cmd;
-        cmd.Command = "bash -c \"" + command + "\"";
-        cmd.execute();
-
-        // TODO: Remove it
-        std::cout << cmd.StdOut;
-        std::cerr << cmd.StdErr;
-        std::cout << "Exit Status: " << cmd.ExitStatus << "\n";
-        // ~TODO: Remove it
-
-        // Send response after complete processing
-        if (VS_CODE_OK != vs_snap_send_response(netif,
-                                                &sender_mac,
-                                                0, // TODO: Fill transaction ID
-                                                VS_CFG_SERVICE_ID,
-                                                VS_CFG_WIFI,
-                                                0 == cmd.ExitStatus,
-                                                NULL,
-                                                0)) {
-            VS_LOG_WARNING("Cannot set WiFi credentials.");
-        }
-    });
-
-    if (!res) {
-        VS_LOG_WARNING("reset processor is busy");
+//-----------------------------------------------------------------------------
+bool vs_logger_output_hal(const char* buffer)
+{
+    if (!buffer) {
+        return false;
     }
 
-    return VS_CODE_COMMAND_NO_RESPONSE;
+    int res = printf("%s", buffer) != 0;
+    fflush(stdout);
+    return res != 0;
+}
+
+//-----------------------------------------------------------------------------
+bool vs_logger_current_time_hal(void)
+{
+    time_t rawtime;
+    struct tm* timeinfo;
+
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+
+    char buf[50];
+    size_t len;
+    snprintf(buf, sizeof(buf), "%s", asctime(timeinfo));
+    len = strlen(buf);
+
+    if (!len) {
+        return false;
+    }
+
+    buf[len - 1] = 0;
+    int res = printf("[%s]", buf);
+    return res != 0;
 }
 
 //-----------------------------------------------------------------------------

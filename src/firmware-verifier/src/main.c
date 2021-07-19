@@ -20,12 +20,11 @@
 #include <errno.h>
 #include <unistd.h>
 
-#include <helpers/app-helpers.h>
-#include <helpers/app-storage.h>
+#include <common/helpers/app-helpers.h>
+#include <common/helpers/app-storage.h>
 
 #include <virgil/iot/logger/logger.h>
 #include <virgil/iot/macros/macros.h>
-#include <virgil/iot/trust_list/trust_list.h>
 #include <virgil/iot/firmware/firmware.h>
 #include <virgil/iot/secmodule/secmodule.h>
 #include <virgil/iot/secmodule/secmodule-helpers.h>
@@ -242,14 +241,6 @@ vs_firmware_self_verify(void) {
 // ----------------------------------------------------------------------------
 static void
 _start_app_image(int argc, char *argv[]) {
-    const char *MAC_SHORT = "-m";
-    const char *MAC_FULL = "--mac";
-    char *mac_str = vs_app_get_commandline_arg(argc, argv, MAC_SHORT, MAC_FULL);
-
-    VS_LOG_INFO("Start new app image ...");
-    if (-1 == execl(_path_to_image, _path_to_image, MAC_SHORT, mac_str, NULL)) {
-        VS_LOG_ERROR("Error start new app. errno = %d (%s)", errno, strerror(errno));
-    }
 }
 
 // ----------------------------------------------------------------------------
@@ -270,10 +261,10 @@ main(int argc, char *argv[]) {
     STATUS_CHECK(vs_app_get_image_path_from_commandline_params(argc, argv, &_path_to_image),
                  "Cannot read input parameters");
 
-    const char *title = "Thing bootloader";
+    const char *title = "Firmware verifier";
     const char *devices_dir = "thing";
-    const char *MANUFACTURE_ID = "KeyWest Networks";
-    const char *DEVICE_MODEL = "bonsai";
+    const char *MANUFACTURE_ID = "YIoT";
+    const char *DEVICE_MODEL = "openwrt";
 
     // Print title
     vs_app_print_title(title, argv[0], MANUFACTURE_ID, DEVICE_MODEL);
@@ -326,9 +317,7 @@ terminate:
         _start_app_image(argc, argv);
     }
 
-
-    VS_LOG_INFO("\n\n\n");
-    VS_LOG_INFO("Terminating bootloader ...");
+    VS_LOG_DEBUG("\n\n\nTerminating firmware verifier ...");
 }
 
 // ----------------------------------------------------------------------------

@@ -127,7 +127,6 @@ vs_app_print_title(const char *devices_dir,
                    const char *app_file,
                    const char *manufacture_id_str,
                    const char *device_type_str) {
-    VS_LOG_INFO("\n\n");
     VS_LOG_INFO("--------------------------------------------");
     VS_LOG_INFO("%s app at %s", devices_dir, app_file);
     VS_LOG_INFO("Manufacture ID = \"%s\" , Device type = \"%s\"", manufacture_id_str, device_type_str);

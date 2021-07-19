@@ -24,7 +24,7 @@
 #include <virgil/iot/logger/logger.h>
 #include <virgil/iot/macros/macros.h>
 
-#include "helpers/event-group-bits.h"
+#include "common/helpers/event-group-bits.h"
 
 /******************************************************************************/
 vs_event_bits_t

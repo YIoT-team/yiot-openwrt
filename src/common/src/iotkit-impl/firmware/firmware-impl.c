@@ -33,10 +33,10 @@
 #include <stdlib-config.h>
 #include <update-config.h>
 
-#include "sdk-impl/storage/storage-nix-impl.h"
-#include "helpers/app-helpers.h"
-#include "helpers/app-storage.h"
-#include "helpers/file-io.h"
+#include "common/iotkit-impl/storage/storage-nix-impl.h"
+#include "common/helpers/app-helpers.h"
+#include "common/helpers/app-storage.h"
+#include "common/helpers/file-io.h"
 
 #define NEW_APP_EXTEN ".new"
 #define BACKUP_APP_EXTEN ".old"

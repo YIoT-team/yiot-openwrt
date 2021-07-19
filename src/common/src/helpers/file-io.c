@@ -32,7 +32,7 @@
 #include <global-hal.h>
 #include <virgil/iot/logger/logger.h>
 #include <virgil/iot/macros/macros.h>
-#include <helpers/file-cache.h>
+#include "common/helpers/file-cache.h"
 
 static char _base_dir[FILENAME_MAX] = {0};
 

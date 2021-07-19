@@ -17,18 +17,21 @@
 //    Lead Maintainer: Roman Kutashenko <kutashenko@gmail.com>
 //  ────────────────────────────────────────────────────────────
 
-#ifndef VS_IOT_PACKETS_QUEUE_H
-#define VS_IOT_PACKETS_QUEUE_H
+#ifndef YIOT_SETTINGS_H
+#define YIOT_SETTINGS_H
 
-#include <virgil/iot/protocols/snap/snap-structs.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-vs_status_e
-vs_packets_queue_init(vs_netif_process_cb_t packet_processor);
+const char*
+ks_settings_installation_dir(void);
 
-vs_status_e
-vs_packets_queue_deinit(void);
+const char*
+ks_settings_scripts_dir(void);
 
-vs_status_e
-vs_packets_queue_add(struct vs_netif_t *netif, const uint8_t *data, const uint16_t data_sz);
+#ifdef __cplusplus
+}
+#endif
 
-#endif // VS_IOT_PACKETS_QUEUE_H
+#endif // YIOT_SETTINGS_H

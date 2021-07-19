@@ -17,37 +17,17 @@
 //    Lead Maintainer: Roman Kutashenko <kutashenko@gmail.com>
 //  ────────────────────────────────────────────────────────────
 
-#include <virgil/iot/logger/logger.h>
+#ifndef VS_IOT_NIX_STORAGE_IMPL_H
+#define VS_IOT_NIX_STORAGE_IMPL_H
 
-/******************************************************************************/
-bool
-vs_logger_output_hal(const char *buffer) {
-    if (!buffer) {
-        return false;
-    }
+#include <virgil/iot/storage_hal/storage_hal.h>
+#include "common/helpers/file-io.h"
+#include <virgil/iot/status_code/status_code.h>
 
-    int res = printf("%s", buffer) != 0;
-    fflush(stdout);
-    return res != 0;
-}
+vs_storage_impl_data_ctx_t
+vs_nix_storage_impl_data_init(const char *dir);
 
-/******************************************************************************/
-bool
-vs_logger_current_time_hal(void) {
-    time_t result = time(NULL);
-    char buf[50];
-    size_t len;
-    snprintf(buf, sizeof(buf), "%s", asctime(gmtime(&result)));
-    len = strlen(buf);
+vs_storage_impl_func_t
+vs_nix_storage_impl_func(void);
 
-    if (!len) {
-        return false;
-    }
-
-    buf[len - 1] = 0;
-    if (result != -1) {
-        int res = printf("[%s]", buf);
-        return res != 0;
-    }
-    return false;
-}
+#endif // VS_IOT_NIX_STORAGE_IMPL_H

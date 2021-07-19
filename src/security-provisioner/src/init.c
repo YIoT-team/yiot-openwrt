@@ -17,21 +17,18 @@
 //    Lead Maintainer: Roman Kutashenko <kutashenko@gmail.com>
 //  ────────────────────────────────────────────────────────────
 
-#include <virgil/iot/protocols/snap/info/info-server.h>
+#include <common/protocols/snap/user/user-server.h>
 #include <virgil/iot/protocols/snap/cfg/cfg-server.h>
+#include <virgil/iot/protocols/snap/info/info-server.h>
 #include <virgil/iot/protocols/snap/prvs/prvs-server.h>
 #include <virgil/iot/protocols/snap/scrt/scrt-server.h>
-#include <common/protocols/snap/user/user-server.h>
 
 #include <virgil/iot/protocols/snap.h>
 #include <virgil/iot/provision/provision.h>
-#include <virgil/iot/session/session.h>
 #include <virgil/iot/secbox/secbox.h>
+#include <virgil/iot/session/session.h>
 
 #include "init.h"
-
-#include "common/iotkit-impl/netif/netif-ble-linux.h"
-#include "common/iotkit-impl/netif/netif-websock.h"
 
 static void
 _file_ver_info_cb(vs_file_version_t ver);
@@ -40,7 +37,7 @@ static vs_provision_events_t _provision_event = {_file_ver_info_cb};
 
 // Dev name
 static vs_storage_element_id_t _device_name_storage_id = {0};
-static const char *_defaultDevName = "My new RPi";
+static const char *_defaultDevName = "My new Router";
 
 #define BLE_DEVICE_NAME_LIMIT (16)
 
@@ -58,8 +55,10 @@ static vs_status_e
 init_name_storage_id(void) {
     if (!_device_name_storage_id[0]) {
         VS_IOT_MEMSET(_device_name_storage_id, 0, sizeof(_device_name_storage_id));
-        VS_IOT_STRCPY(_device_name_storage_id, "dev_name");
+        VS_IOT_STRCPY((char *)_device_name_storage_id, "dev_name");
     }
+
+    return VS_CODE_OK;
 }
 
 //-----------------------------------------------------------------------------
@@ -69,9 +68,8 @@ name_change_cb(void) {
     CHECK_NOT_ZERO_RET(vs_snap_device_name(), VS_CODE_ERR_INCORRECT_ARGUMENT);
     res = vs_secbox_save(VS_SECBOX_SIGNED_AND_ENCRYPTED,
                          _device_name_storage_id,
-                         (const uint8_t*)vs_snap_device_name(),
+                         (const uint8_t *)vs_snap_device_name(),
                          strnlen(vs_snap_device_name(), DEVICE_NAME_SZ_MAX));
-    ks_netif_ble_advertise(vs_provision_is_ready(), vs_snap_device_name());
     return res;
 }
 
@@ -81,22 +79,19 @@ init_dev_name(void) {
     vs_status_e ret_code;
     uint8_t name_buf[DEVICE_NAME_SZ_MAX];
     size_t name_sz;
-    const char *name;
+    char const *name;
 
     VS_IOT_MEMSET(name_buf, 0, DEVICE_NAME_SZ_MAX);
     init_name_storage_id();
 
-    if (VS_CODE_OK == vs_secbox_load(_device_name_storage_id,
-                                     name_buf,
-                                     DEVICE_NAME_SZ_MAX,
-                                     &name_sz)) {
+    if (VS_CODE_OK == vs_secbox_load(_device_name_storage_id, name_buf, DEVICE_NAME_SZ_MAX, &name_sz)) {
         if (name_sz > BLE_DEVICE_NAME_LIMIT) {
             name_sz = BLE_DEVICE_NAME_LIMIT;
         }
         name_buf[name_sz] = 0x00;
-        name = name_buf;
+        name = (char *)name_buf;
     } else {
-        name = _defaultDevName;
+        name = (char *)_defaultDevName;
     }
 
     STATUS_CHECK_RET(vs_snap_init_device_name(name, false), "Unable to set device name");
@@ -148,7 +143,6 @@ ks_iotkit_init(vs_device_manufacture_id_t manufacture_id,
                               device_roles),
                  "Unable to initialize SNAP module");
 
-
     while (netif_impl[i] != NULL) {
         STATUS_CHECK_RET(vs_snap_netif_add(netif_impl[i]), "Unable to add netif to a SNAP module");
         ++i;
@@ -157,13 +151,6 @@ ks_iotkit_init(vs_device_manufacture_id_t manufacture_id,
     // Get main MAC address
     vs_mac_addr_t default_mac;
     vs_snap_mac_addr(netif_impl[0], &default_mac);
-
-    // Set common MAC
-    ks_netif_ble_update_mac(default_mac);
-    vs_netif_websock_update_mac(default_mac);
-
-    // Start BLE advertising
-    ks_netif_ble_advertise(vs_provision_is_ready(), vs_snap_device_name());
 
     // Security Session module
     vs_session_init(secmodule_impl, default_mac.bytes);

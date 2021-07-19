@@ -17,17 +17,27 @@
 //    Lead Maintainer: Roman Kutashenko <kutashenko@gmail.com>
 //  ────────────────────────────────────────────────────────────
 
-#ifndef VS_IOT_NIX_STORAGE_IMPL_H
-#define VS_IOT_NIX_STORAGE_IMPL_H
+#ifndef YIOT_TIMER_H
+#define YIOT_TIMER_H
 
-#include <virgil/iot/storage_hal/storage_hal.h>
-#include "helpers/file-io.h"
-#include <virgil/iot/status_code/status_code.h>
+#include <chrono>
+#include <functional>
+#include <mutex>
 
-vs_storage_impl_data_ctx_t
-vs_nix_storage_impl_data_init(const char *dir);
+class KSTimer {
+public:
+    KSTimer();
 
-vs_storage_impl_func_t
-vs_nix_storage_impl_func(void);
+    bool
+    add(std::chrono::milliseconds delay, std::function<void()> callback);
 
-#endif // VS_IOT_NIX_STORAGE_IMPL_H
+private:
+    bool m_running;
+    std::mutex m_stateMutex;
+    std::mutex m_changingMutex;
+    std::chrono::milliseconds m_delay;
+    std::chrono::high_resolution_clock::time_point m_start;
+    std::function<void()> m_callback;
+};
+
+#endif // YIOT_TIMER_H
