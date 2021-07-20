@@ -453,16 +453,6 @@ _udp_init(struct vs_netif_t* netif, const vs_netif_rx_cb_t rx_cb, const vs_netif
     assert(rx_cb);
     (void)netif;
 
-    _netif_udp_.user_data = NULL;
-    _netif_udp_.init = _udp_init;
-    _netif_udp_.deinit = _udp_deinit;
-    _netif_udp_.tx = _udp_tx;
-    _netif_udp_.mac_addr = _udp_mac;
-    _netif_udp_.packet_buf_filled = 0;
-
-    _ready = false;
-    _connecting = false;
-
     if (!_resendContainer) {
         _resendContainer = new KSResendContainer(_internal_udp_tx);
     }
@@ -543,6 +533,16 @@ _update_mac(void)
 extern "C" vs_netif_t*
 vs_hal_netif_udp(void)
 {
+    _netif_udp_.user_data = NULL;
+    _netif_udp_.init = _udp_init;
+    _netif_udp_.deinit = _udp_deinit;
+    _netif_udp_.tx = _udp_tx;
+    _netif_udp_.mac_addr = _udp_mac;
+    _netif_udp_.packet_buf_filled = 0;
+
+    _ready = false;
+    _connecting = false;
+    
     _update_mac();
     return &_netif_udp_;
 }

@@ -98,6 +98,7 @@ project(yiot-openwrt VERSION 0.1.0 LANGUAGES C)
     #
     #	Link libraries
     #
+    find_package (Threads)
     target_link_libraries(yiot-openwrt
             PUBLIC
 
@@ -120,6 +121,9 @@ project(yiot-openwrt VERSION 0.1.0 LANGUAGES C)
             trust_list
             update
             vs-threadsafe
+
+            # Threads
+            ${CMAKE_THREAD_LIBS_INIT}
             )
 
     #
