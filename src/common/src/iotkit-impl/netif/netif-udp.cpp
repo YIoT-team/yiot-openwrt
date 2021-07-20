@@ -44,6 +44,7 @@
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <unistd.h>
 
 #include <fstream>
@@ -72,12 +73,7 @@ _udp_mac(const struct vs_netif_t* netif, struct vs_mac_addr_t* mac_addr);
 static vs_status_e
 _internal_udp_tx(const uint8_t* data, const uint16_t data_sz);
 
-static vs_netif_t _netif_udp_ = { .user_data = NULL,
-    .init = _udp_init,
-    .deinit = _udp_deinit,
-    .tx = _udp_tx,
-    .mac_addr = _udp_mac,
-    .packet_buf_filled = 0 };
+static vs_netif_t _netif_udp_;
 
 static vs_netif_rx_cb_t _netif_udp_rx_cb = 0;
 static vs_netif_process_cb_t _netif_udp_process_cb = 0;
@@ -90,8 +86,8 @@ static uint8_t _mac_addr[6] = { 2, 2, 2, 2, 2, 2 };
 static in_addr_t _dst_addr = INADDR_BROADCAST;
 
 static KSResendContainer* _resendContainer = nullptr;
-static std::atomic<bool> _ready = false;
-static std::atomic<bool> _connecting = false;
+static std::atomic<bool> _ready;
+static std::atomic<bool> _connecting;
 
 #if __APPLE__
 static std::string _defaultNetif = "en0";
@@ -456,6 +452,16 @@ _udp_init(struct vs_netif_t* netif, const vs_netif_rx_cb_t rx_cb, const vs_netif
 {
     assert(rx_cb);
     (void)netif;
+
+    _netif_udp_.user_data = NULL;
+    _netif_udp_.init = _udp_init;
+    _netif_udp_.deinit = _udp_deinit;
+    _netif_udp_.tx = _udp_tx;
+    _netif_udp_.mac_addr = _udp_mac;
+    _netif_udp_.packet_buf_filled = 0;
+
+    _ready = false;
+    _connecting = false;
 
     if (!_resendContainer) {
         _resendContainer = new KSResendContainer(_internal_udp_tx);

@@ -39,10 +39,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <pthread.h>
-#include "helpers/msg-queue.h"
 #include <virgil/iot/logger/logger.h>
 #include <virgil/iot/macros/macros.h>
 #include <virgil/iot/status_code/status_code.h>
+
+#include "common/helpers/msg-queue.h"
 
 typedef struct {
     const void *info;

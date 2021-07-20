@@ -19,7 +19,6 @@
 
 #include <arpa/inet.h>
 
-#include <filesystem>
 #include <iostream>
 
 #include "common/helpers/command.h"

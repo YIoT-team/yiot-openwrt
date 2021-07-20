@@ -53,6 +53,7 @@ project(yiot-openwrt VERSION 0.1.0 LANGUAGES C)
              ${CMAKE_CURRENT_LIST_DIR}/include/common/helpers/file-cache.h
              ${CMAKE_CURRENT_LIST_DIR}/include/common/helpers/timer.h
              ${CMAKE_CURRENT_LIST_DIR}/include/common/helpers/settings.h
+             ${CMAKE_CURRENT_LIST_DIR}/include/common/helpers/msg-queue.h
              ${CMAKE_CURRENT_LIST_DIR}/include/common/config/pc/endian-config.h
              ${CMAKE_CURRENT_LIST_DIR}/include/common/config/pc/global-hal.h
              ${CMAKE_CURRENT_LIST_DIR}/include/common/config/pc/logger-config.h
@@ -65,6 +66,9 @@ project(yiot-openwrt VERSION 0.1.0 LANGUAGES C)
              ${CMAKE_CURRENT_LIST_DIR}/src/iotkit-impl/netif/netif-udp.cpp
              ${CMAKE_CURRENT_LIST_DIR}/src/iotkit-impl/storage/storage-nix-impl.c
              ${CMAKE_CURRENT_LIST_DIR}/src/iotkit-impl/threadsafe/lock-nix-hal.c
+             ${CMAKE_CURRENT_LIST_DIR}/src/iotkit-impl/firmware/firmware-impl.c
+             ${CMAKE_CURRENT_LIST_DIR}/src/iotkit-impl/threadsafe/lock-nix-hal.c
+             ${CMAKE_CURRENT_LIST_DIR}/src/iotkit-impl/helpers.c
              ${CMAKE_CURRENT_LIST_DIR}/src/helpers/file-io.c
              ${CMAKE_CURRENT_LIST_DIR}/src/helpers/file-cache.c
              ${CMAKE_CURRENT_LIST_DIR}/src/helpers/event-group-bits.c
@@ -72,8 +76,7 @@ project(yiot-openwrt VERSION 0.1.0 LANGUAGES C)
              ${CMAKE_CURRENT_LIST_DIR}/src/helpers/app-storage.c
              ${CMAKE_CURRENT_LIST_DIR}/src/helpers/timer.cpp
              ${CMAKE_CURRENT_LIST_DIR}/src/helpers/settings.cpp
-             ${CMAKE_CURRENT_LIST_DIR}/src/iotkit-impl/firmware/firmware-impl.c
-             ${CMAKE_CURRENT_LIST_DIR}/src/iotkit-impl/threadsafe/lock-nix-hal.c
+             ${CMAKE_CURRENT_LIST_DIR}/src/helpers/msg-queue.c
             )
 
     #
