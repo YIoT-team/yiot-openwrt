@@ -72,3 +72,4 @@ transitive-args.cmake
 #   Do not ignore
 #
 !service/linux/include/config
+!src/common/include/common/config/**
