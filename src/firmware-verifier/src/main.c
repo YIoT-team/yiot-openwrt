@@ -246,7 +246,6 @@ _start_app_image(int argc, char *argv[]) {
 // ----------------------------------------------------------------------------
 int
 main(int argc, char *argv[]) {
-    vs_mac_addr_t forced_mac_addr;
     bool is_image_correct = false;
     vs_provision_events_t provision_events = {NULL};
 
@@ -262,7 +261,6 @@ main(int argc, char *argv[]) {
                  "Cannot read input parameters");
 
     const char *title = "Firmware verifier";
-    const char *devices_dir = "thing";
     const char *MANUFACTURE_ID = "YIoT";
     const char *DEVICE_MODEL = "openwrt";
 
@@ -270,7 +268,13 @@ main(int argc, char *argv[]) {
     vs_app_print_title(title, argv[0], MANUFACTURE_ID, DEVICE_MODEL);
 
     // Prepare local storage
-    STATUS_CHECK(vs_app_prepare_storage(devices_dir, forced_mac_addr), "Cannot prepare storage");
+    vs_mac_addr_t tmp;
+    memset(&tmp, 0, sizeof(tmp));
+    char *path = getenv("YIOT_STORAGE");
+    if (!path) {
+        path = "/var/yiot/pc";
+    }
+    STATUS_CHECK(vs_app_prepare_storage(path, tmp), "Cannot prepare storage");
 
     vs_app_str_to_bytes(_manufacture_id, MANUFACTURE_ID, VS_DEVICE_MANUFACTURE_ID_SIZE);
     vs_app_str_to_bytes(_device_type, DEVICE_MODEL, VS_DEVICE_TYPE_SIZE);
