@@ -166,13 +166,18 @@ vs_firmware_self_verify(void) {
     vs_firmware_ntoh_descriptor(&desc);
 
     CHECK_RET(footer_sz <= file_sz - desc.firmware_length, VS_CODE_ERR_FILE, "Incorrect footer size");
+#if 0
     CHECK_RET(0 == VS_IOT_MEMCMP(desc.info.device_type, _device_type, sizeof(vs_device_type_t)),
               VS_CODE_ERR_FILE,
               "Incorred manufacture id");
     CHECK_RET(0 == VS_IOT_MEMCMP(desc.info.manufacture_id, _manufacture_id, sizeof(vs_device_manufacture_id_t)),
               VS_CODE_ERR_FILE,
               "Incorred device type");
+#endif
 
+    if (!desc.chunk_size) {
+        desc.chunk_size = 10 * 1024;
+    }
     uint8_t buf[desc.chunk_size];
     uint32_t offset = 0;
 
@@ -254,7 +259,7 @@ main(int argc, char *argv[]) {
     vs_storage_op_ctx_t slots_storage_impl;
 
     // Initialize Logger module
-    vs_logger_init(VS_LOGLEV_DEBUG);
+    vs_logger_init(VS_LOGLEV_INFO);
 
     // Get input parameters
     STATUS_CHECK(vs_app_get_image_path_from_commandline_params(argc, argv, &_path_to_image),
@@ -320,8 +325,6 @@ terminate:
     if (is_image_correct) {
         _start_app_image(argc, argv);
     }
-
-    VS_LOG_DEBUG("\n\n\nTerminating firmware verifier ...");
 }
 
 // ----------------------------------------------------------------------------
