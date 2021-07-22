@@ -45,6 +45,16 @@ define Package/yiot
   MAINTAINER:=Roman Kutashenko <kutashenko@yiot-dev.io>
 endef
 
+define Package/yiot/install
+	$(INSTALL_DIR) $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/yiot $(1)/usr/bin/yiot
+endef
+
+define Package/yiot-firmware-verifier/install
+	$(INSTALL_DIR) $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/yiot-firmware-verifier $(1)/usr/bin/yiot-firmware-verifier
+endef
+
 TARGET_CFLAGS += -I$(STAGING_DIR)/usr/include -fpie -ffunction-sections -fdata-sections
 TARGET_LDFLAGS += -L$(STAGING_DIR)/usr/lib -pie -Wl,--gc-sections
 
