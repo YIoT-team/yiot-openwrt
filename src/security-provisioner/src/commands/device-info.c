@@ -31,6 +31,7 @@ ks_devinfo_manufacturer(vs_device_manufacture_id_t manufacture_id) {
 void
 ks_devinfo_device_type(vs_device_type_t device_type) {
     memset(device_type, 0, sizeof(vs_device_type_t));
+    device_type[0] = 3;
 }
 
 //-----------------------------------------------------------------------------
