@@ -30,6 +30,11 @@ set (VIRGIL_IOT_HIGH_LEVEL OFF)
 set (VIRGIL_IOT_THREADSAFE ON)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../core yiot-core)
 
+# ---------------------------------------------------------------------------
+# LittleFS
+# ---------------------------------------------------------------------------
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/ext/filesystem)
+
 project(yiot-openwrt VERSION 0.1.0 LANGUAGES C)
 
     #
@@ -46,11 +51,11 @@ project(yiot-openwrt VERSION 0.1.0 LANGUAGES C)
              #	Headers
              ${CMAKE_CURRENT_LIST_DIR}/include/common/iotkit-impl/packets-queue.h
              ${CMAKE_CURRENT_LIST_DIR}/include/common/iotkit-impl/netif/netif-udp.h
+             ${CMAKE_CURRENT_LIST_DIR}/ext/filesystem/yiot-littlefs-storage.h
+             ${CMAKE_CURRENT_LIST_DIR}/ext/filesystem/yiot-littlefs.h
              ${CMAKE_CURRENT_LIST_DIR}/include/common/helpers/file-io.h
              ${CMAKE_CURRENT_LIST_DIR}/include/common/helpers/event-group-bits.h
              ${CMAKE_CURRENT_LIST_DIR}/include/common/helpers/app-helpers.h
-             ${CMAKE_CURRENT_LIST_DIR}/include/common/helpers/app-storage.h
-             ${CMAKE_CURRENT_LIST_DIR}/include/common/helpers/file-cache.h
              ${CMAKE_CURRENT_LIST_DIR}/include/common/helpers/timer.h
              ${CMAKE_CURRENT_LIST_DIR}/include/common/helpers/settings.h
              ${CMAKE_CURRENT_LIST_DIR}/include/common/helpers/msg-queue.h
@@ -64,16 +69,15 @@ project(yiot-openwrt VERSION 0.1.0 LANGUAGES C)
              #	Sources
              ${CMAKE_CURRENT_LIST_DIR}/src/iotkit-impl/packets-queue.c
              ${CMAKE_CURRENT_LIST_DIR}/src/iotkit-impl/netif/netif-udp.cpp
-             ${CMAKE_CURRENT_LIST_DIR}/src/iotkit-impl/storage/storage-nix-impl.c
+             ${CMAKE_CURRENT_LIST_DIR}/ext/filesystem/yiot-littlefs-storage.c
+             ${CMAKE_CURRENT_LIST_DIR}/ext/filesystem/yiot-littlefs.c
              ${CMAKE_CURRENT_LIST_DIR}/src/iotkit-impl/threadsafe/lock-nix-hal.c
              ${CMAKE_CURRENT_LIST_DIR}/src/iotkit-impl/firmware/firmware-impl.c
              ${CMAKE_CURRENT_LIST_DIR}/src/iotkit-impl/threadsafe/lock-nix-hal.c
              ${CMAKE_CURRENT_LIST_DIR}/src/iotkit-impl/helpers.c
              ${CMAKE_CURRENT_LIST_DIR}/src/helpers/file-io.c
-             ${CMAKE_CURRENT_LIST_DIR}/src/helpers/file-cache.c
              ${CMAKE_CURRENT_LIST_DIR}/src/helpers/event-group-bits.c
              ${CMAKE_CURRENT_LIST_DIR}/src/helpers/app-helpers.c
-             ${CMAKE_CURRENT_LIST_DIR}/src/helpers/app-storage.c
              ${CMAKE_CURRENT_LIST_DIR}/src/helpers/timer.cpp
              ${CMAKE_CURRENT_LIST_DIR}/src/helpers/settings.cpp
              ${CMAKE_CURRENT_LIST_DIR}/src/helpers/msg-queue.c
@@ -121,6 +125,9 @@ project(yiot-openwrt VERSION 0.1.0 LANGUAGES C)
             trust_list
             update
             vs-threadsafe
+
+            #   LittleFS
+            littlefs
 
             # Threads
             ${CMAKE_THREAD_LIBS_INIT}
