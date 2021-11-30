@@ -81,6 +81,7 @@ project(yiot-openwrt VERSION 0.1.0 LANGUAGES C)
              ${CMAKE_CURRENT_LIST_DIR}/src/helpers/timer.cpp
              ${CMAKE_CURRENT_LIST_DIR}/src/helpers/settings.cpp
              ${CMAKE_CURRENT_LIST_DIR}/src/helpers/msg-queue.c
+             ${CMAKE_CURRENT_LIST_DIR}/src/yiot-littlefs-hal.c
             )
 
     #

@@ -24,27 +24,19 @@
 #include "lfs_util.h"
 
 #include <yiot-littlefs.h>
+#include <yiot-littlefs-hal.h>
 #include <stdlib-config.h>
 #include <virgil/iot/logger/logger.h>
 #include <virgil/iot/macros/macros.h>
 #include <virgil/iot/storage_hal/storage_hal.h>
 
 #define VS_LFS_MIN_CHUNK (16)
+#define VS_LFS_CACHE_SZ (64 * 1024)
 #define VS_FLASH_BLOCK_CYCLES (1000)
 
 typedef struct {
     uint32_t base_addr;
 } vs_lfs_storage_ctx_t;
-
-// ----------------------------------------------------------------------------
-int iot_flash_read(int offset, void *buf, size_t count) {
-    return -1;
-}
-
-// ----------------------------------------------------------------------------
-int iot_flash_write(int offset, void *buf, size_t count) {
-    return -1;
-}
 
 // ----------------------------------------------------------------------------
 // Read a region in a block. Negative error codes are propogated
@@ -84,8 +76,7 @@ _lfs_erase_block_hal(const struct lfs_config *c, lfs_block_t block) {
     vs_lfs_storage_ctx_t *storage_ctx = (vs_lfs_storage_ctx_t *)(c->context);
     CHECK_RET(block < c->block_count, -1, "Error try to write outside device");
     CHECK_NOT_ZERO_RET(storage_ctx, -1);
-
-    return -1; //(0 == flash_erase(storage_ctx->base_addr + c->block_size * block, &flags_erase)) ? 0 : -1;
+    return iot_flash_erase(storage_ctx->base_addr + block * c->block_size, c->block_size);
 }
 
 // ----------------------------------------------------------------------------
@@ -98,7 +89,7 @@ _lfs_sync_block_hal(const struct lfs_config *c) {
 
 // ----------------------------------------------------------------------------
 lfs_t *
-vs_lfs_storage_init(uint32_t base_addr, lfs_size_t num_of_pages) {
+vs_lfs_storage_init(uint32_t base_addr, lfs_size_t sz) {
     lfs_t *lfs = NULL;
     struct lfs_config *lfs_cfg = NULL;
 
@@ -124,24 +115,21 @@ vs_lfs_storage_init(uint32_t base_addr, lfs_size_t num_of_pages) {
     }
     VS_IOT_MEMSET(lfs, 0, sizeof(lfs_t));
 
-    VS_LOG_DEBUG("init_storage. base_addr = 0x%x, num_of_pages = %d", base_addr, num_of_pages);
+    VS_LOG_DEBUG("init_storage. base_addr = 0x%x, size = %d", base_addr, sz);
 
     lfs_cfg->read = _lfs_read_block_hal;
     lfs_cfg->prog = _lfs_prog_block_hal;
     lfs_cfg->erase = _lfs_erase_block_hal;
     lfs_cfg->sync = _lfs_sync_block_hal;
-    lfs_cfg->read_size = VS_LFS_MIN_CHUNK;
-    lfs_cfg->prog_size = VS_LFS_MIN_CHUNK;
-    lfs_cfg->block_size = PAGE_PROGRAM_SIZE;
-    lfs_cfg->block_count = num_of_pages;
-    lfs_cfg->cache_size = VS_LFS_MIN_CHUNK;
-    lfs_cfg->lookahead_size = VS_LFS_MIN_CHUNK;
-    lfs_cfg->block_cycles = VS_FLASH_BLOCK_CYCLES;
+
+    if (iot_flash_init(lfs_cfg) < 0) {
+        VS_LOG_ERROR("Error init flash");
+        goto terminate_fail;
+    }
 
     ctx->base_addr = base_addr;
 
     lfs_cfg->context = ctx;
-
 
     if (0 != lfs_mount(lfs, lfs_cfg)) {
         if (0 != lfs_format(lfs, lfs_cfg)) {
@@ -176,6 +164,12 @@ terminate_fail:
 int
 vs_lfs_storage_erase(lfs_t *lfs) {
     return -1;
+}
+
+// ----------------------------------------------------------------------------
+size_t
+vs_lfs_storage_size(void) {
+    return 64 * 1024;
 }
 
 // ----------------------------------------------------------------------------

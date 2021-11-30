@@ -24,48 +24,16 @@
 #include <yiot-littlefs.h>
 
 // ----------------------------------------------------------------------------
-static uint32_t _max_file_sz(vs_app_storage_type_t type) { return 1024; }
+static uint32_t _max_file_sz(vs_app_storage_type_t type) { return 4096; }
 
 // ----------------------------------------------------------------------------
 static uint32_t _flash_sz(vs_app_storage_type_t type) {
-    switch (type) {
-    case VS_APP_STORAGE_TRUST_LIST: {
-        return 0x01;
-    }
-
-    case VS_APP_STORAGE_SLOTS: {
-        return 0x02;
-    }
-
-    case VS_APP_STORAGE_SECBOX: {
-        return 0x03;
-    }
-
-    default: {
-        return 0x00;
-    }
-    }
+    return vs_lfs_storage_size();
 }
 
 // ----------------------------------------------------------------------------
 static uint64_t _base_addr(vs_app_storage_type_t type) {
-    switch (type) {
-    case VS_APP_STORAGE_TRUST_LIST: {
-        return 4096;
-    }
-
-    case VS_APP_STORAGE_SLOTS: {
-        return 4096;
-    }
-
-    case VS_APP_STORAGE_SECBOX: {
-        return 4096;
-    }
-
-    default: {
-        return 0;
-    }
-    }
+    return 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -113,7 +81,7 @@ vs_uboot_storage_impl_data_init(vs_app_storage_type_t type) {
     CHECK_NOT_ZERO_RET(flash_size, NULL);
 
     ctx = (vs_storage_impl_data_ctx_t)vs_lfs_storage_init(
-            base_addr, flash_size / PAGE_PROGRAM_SIZE);
+            base_addr, flash_size);
     CHECK_NOT_ZERO_RET(ctx, NULL);
 
     return ctx;
