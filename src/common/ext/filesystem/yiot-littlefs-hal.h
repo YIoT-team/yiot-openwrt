@@ -34,4 +34,6 @@ int iot_flash_write(int offset, void *buf, size_t count);
 
 int iot_flash_erase(int offset, size_t count);
 
+int iot_flash_hw_sync(void);
+
 #endif // YIOT_LITTLEFS_H
