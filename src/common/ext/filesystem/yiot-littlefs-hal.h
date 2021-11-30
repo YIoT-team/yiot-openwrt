@@ -24,7 +24,9 @@
 #include <lfs_util.h>
 #include <virgil/iot/storage_hal/storage_hal.h>
 
-int iot_flash_init(struct lfs_config *lfs_cfg);
+int iot_flash_set_device(const char *device);
+
+int iot_flash_init(struct lfs_config *lfs_cfg, lfs_size_t sz);
 
 int iot_flash_read(int offset, void *buf, size_t count);
 

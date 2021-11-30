@@ -28,12 +28,44 @@ static uint32_t _max_file_sz(vs_app_storage_type_t type) { return 4096; }
 
 // ----------------------------------------------------------------------------
 static uint32_t _flash_sz(vs_app_storage_type_t type) {
-    return vs_lfs_storage_size();
+    switch (type) {
+    case VS_APP_STORAGE_SLOTS: {
+        return 16 * 1024;
+    }
+
+    case VS_APP_STORAGE_TRUST_LIST: {
+        return 16 * 1024;
+    }
+
+    case VS_APP_STORAGE_SECBOX: {
+        return 32 * 1024;
+    }
+
+    default: {
+        return 0x00;
+    }
+    }
 }
 
 // ----------------------------------------------------------------------------
 static uint64_t _base_addr(vs_app_storage_type_t type) {
-    return 0;
+    switch (type) {
+    case VS_APP_STORAGE_SLOTS: {
+        return 0;
+    }
+
+    case VS_APP_STORAGE_TRUST_LIST: {
+        return _flash_sz(VS_APP_STORAGE_SLOTS);
+    }
+
+    case VS_APP_STORAGE_SECBOX: {
+        return _flash_sz(VS_APP_STORAGE_SLOTS) + _flash_sz(VS_APP_STORAGE_TRUST_LIST);
+    }
+
+    default: {
+        return 0;
+    }
+    }
 }
 
 // ----------------------------------------------------------------------------
@@ -127,7 +159,7 @@ vs_status_e static vs_uboot_storage_sync_hal(
         const vs_storage_impl_data_ctx_t storage_ctx,
         const vs_storage_file_t file) {
 
-    return VS_CODE_ERR_FILE;
+    return VS_CODE_OK;
 }
 
 // ----------------------------------------------------------------------------
@@ -159,7 +191,22 @@ static vs_status_e
 vs_uboot_storage_save_hal(const vs_storage_impl_data_ctx_t storage_ctx,
                           const vs_storage_file_t file, size_t offset,
                           const uint8_t *data, size_t data_sz) {
-    return VS_CODE_ERR_FILE;
+    vs_status_e res = VS_CODE_ERR_FILE;
+
+    CHECK_NOT_ZERO(data);
+    CHECK_NOT_ZERO(storage_ctx);
+    CHECK_NOT_ZERO(file);
+    lfs_t *lfs = (lfs_t *)storage_ctx;
+    lfs_file_t *f = (lfs_file_t *)file;
+
+    CHECK(0 <= lfs_file_seek(lfs, f, offset, LFS_SEEK_SET), "Error change file position");
+
+    CHECK(0 <= lfs_file_write(lfs, f, data, data_sz), "Error write file");
+
+    res = VS_CODE_OK;
+
+terminate:
+    return res;
 }
 
 // ----------------------------------------------------------------------------
@@ -214,7 +261,21 @@ terminate:
 static vs_status_e
 vs_uboot_storage_del_hal(const vs_storage_impl_data_ctx_t storage_ctx,
                          const vs_storage_element_id_t id) {
-    return VS_CODE_ERR_FILE_DELETE;
+    vs_status_e res = VS_CODE_ERR_FILE_DELETE;
+
+    CHECK_NOT_ZERO(id);
+    CHECK_NOT_ZERO(storage_ctx);
+    lfs_t *lfs = (lfs_t *)storage_ctx;
+
+    char filename[LFS_NAME_MAX];
+    uint32_t len = LFS_NAME_MAX;
+    _data_to_hex(id, sizeof(vs_storage_element_id_t), (uint8_t *)filename, &len);
+
+    lfs_remove(lfs, filename);
+    res = VS_CODE_OK;
+
+terminate:
+    return res;
 }
 
 // ----------------------------------------------------------------------------

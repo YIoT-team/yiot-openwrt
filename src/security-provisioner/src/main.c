@@ -48,6 +48,7 @@
 // Platform-specific helpers
 #include "common/helpers/app-helpers.h" // Different helpers
 #include "yiot-littlefs-storage.h"      // Data Storage helpers
+#include <yiot-littlefs-hal.h>
 
 // High-level wrapper to simplify initialization/deinitialization
 #include "init.h"
@@ -86,6 +87,13 @@ main(int argc, char *argv[]) {
     ks_devinfo_manufacturer(manufacture_id); // Get device manufacturer
     ks_devinfo_device_type(device_type);     // Get device type
     ks_devinfo_device_serial(serial);        // Get device serial
+
+    // Set MTD device
+    if (argc > 1) {
+        iot_flash_set_device(argv[1]);
+    } else {
+        iot_flash_set_device("/dev/mtd0");
+    }
 
     // Initialize Logger module
     vs_logger_init(VS_LOGLEV_DEBUG);

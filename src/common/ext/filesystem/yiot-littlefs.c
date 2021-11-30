@@ -30,10 +30,6 @@
 #include <virgil/iot/macros/macros.h>
 #include <virgil/iot/storage_hal/storage_hal.h>
 
-#define VS_LFS_MIN_CHUNK (16)
-#define VS_LFS_CACHE_SZ (64 * 1024)
-#define VS_FLASH_BLOCK_CYCLES (1000)
-
 typedef struct {
     uint32_t base_addr;
 } vs_lfs_storage_ctx_t;
@@ -122,7 +118,7 @@ vs_lfs_storage_init(uint32_t base_addr, lfs_size_t sz) {
     lfs_cfg->erase = _lfs_erase_block_hal;
     lfs_cfg->sync = _lfs_sync_block_hal;
 
-    if (iot_flash_init(lfs_cfg) < 0) {
+    if (iot_flash_init(lfs_cfg, sz) < 0) {
         VS_LOG_ERROR("Error init flash");
         goto terminate_fail;
     }

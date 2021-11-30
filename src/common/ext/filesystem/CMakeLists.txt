@@ -32,12 +32,12 @@ option(LFS_NO_ASSERT "Disable assertion" OFF)
 # log message options
 option(LFS_NO_DEBUG "Disable debug messages" ON)
 option(LFS_NO_WARN "Disable warning messages" ON)
-option(LFS_NO_ERROR "Disable error message" ON)
+option(LFS_NO_ERROR "Disable error message" OFF)
 option(LFS_YES_TRACE "Enable trace messages" OFF)
 
 #   littlefs library config
 set(LFS_NAME_MAX 65 CACHE STRING "Maximum name size in bytes")
-set(LFS_FILE_MAX 65535 CACHE STRING "Maximum size of a file in bytes")
+set(LFS_FILE_MAX 4096 CACHE STRING "Maximum size of a file in bytes")
 set(LFS_ATTR_MAX 1022 CACHE STRING "Maximum size of custom attributes in bytes")
 
 add_library(littlefs)
