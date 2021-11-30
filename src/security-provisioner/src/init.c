@@ -86,6 +86,13 @@ _provision_update_cb_t(void) {
 
 //-----------------------------------------------------------------------------
 static vs_status_e
+_users_update_cb_t(void) {
+    iot_flash_hw_sync();
+    return VS_CODE_OK;
+}
+
+//-----------------------------------------------------------------------------
+static vs_status_e
 init_dev_name(void) {
     vs_status_e ret_code;
     uint8_t name_buf[DEVICE_NAME_SZ_MAX];
@@ -124,7 +131,7 @@ ks_iotkit_init(vs_device_manufacture_id_t manufacture_id,
     vs_status_e res = VS_CODE_ERR_INIT_SNAP;
     vs_status_e ret_code;
     uint8_t i = 1;
-    vs_snap_scrt_server_service_t scrt_server_cb = {0};
+    vs_snap_scrt_server_service_t scrt_server_cb = {_users_update_cb_t};
     VS_IOT_ASSERT(netif_impl);
     VS_IOT_ASSERT(netif_impl[0]);
 
