@@ -35,7 +35,7 @@ define Package/libconverters
   SECTION:=libs
   CATEGORY:=Libraries
   TITLE:=YIoT format converters
-  MAINTAINER:=Roman Kutashenko <kutashenko@yiot-dev.io>
+  MAINTAINER:=Roman Kutashenko <kutashenko@yiot.dev>
   DEPENDS:=+libstdcpp
 endef
 
@@ -43,7 +43,7 @@ define Package/libyiot-openwrt
   SECTION:=libs
   CATEGORY:=Libraries
   TITLE:=YIoT core libraries
-  MAINTAINER:=Roman Kutashenko <kutashenko@yiot-dev.io>
+  MAINTAINER:=Roman Kutashenko <kutashenko@yiot.dev>
   DEPENDS:=+libconverters
 endef
 
@@ -51,7 +51,7 @@ define Package/yiot-firmware-verifier
   SECTION:=yiot
   CATEGORY:=YIoT Applications
   TITLE:=YIoT Firmware Verifier
-  MAINTAINER:=Roman Kutashenko <kutashenko@yiot-dev.io>
+  MAINTAINER:=Roman Kutashenko <kutashenko@yiot.dev>
   DEPENDS:=+libyiot-openwrt
 endef
 
@@ -59,7 +59,7 @@ define Package/yiot
   SECTION:=yiot
   CATEGORY:=YIoT Applications
   TITLE:=YIoT Security provisioner
-  MAINTAINER:=Roman Kutashenko <kutashenko@yiot-dev.io>
+  MAINTAINER:=Roman Kutashenko <kutashenko@yiot.dev>
   DEPENDS:=+libyiot-openwrt
 endef
 
