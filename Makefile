@@ -67,7 +67,8 @@ TARGET_CFLAGS += -I$(STAGING_DIR)/usr/include -fpie -ffunction-sections -fdata-s
 TARGET_LDFLAGS += -L$(STAGING_DIR)/usr/lib -pie -Wl,--gc-sections
 
 CMAKE_OPTIONS = \
-	-DYIOT_OPENWRT=ON
+	-DYIOT_OPENWRT=ON \
+  -G Ninja
 
 define Package/libconverters/install
 	$(INSTALL_DIR) $(1)/usr/lib
