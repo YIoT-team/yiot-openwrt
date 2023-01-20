@@ -18,20 +18,19 @@
 //  ────────────────────────────────────────────────────────────
 
 #include "commands/device-info.h"
+#include <common/helpers/app-helpers.h>
 #include <string.h>
 
 //-----------------------------------------------------------------------------
 void
 ks_devinfo_manufacturer(vs_device_manufacture_id_t manufacture_id) {
-    memset(manufacture_id, 0, sizeof(vs_device_manufacture_id_t));
-    strncpy((char *)manufacture_id, "YIoT-dev", sizeof(vs_device_manufacture_id_t) - 1);
+    vs_app_str_to_bytes(manufacture_id, "YIoT-dev", VS_DEVICE_MANUFACTURE_ID_SIZE);
 }
 
 //-----------------------------------------------------------------------------
 void
 ks_devinfo_device_type(vs_device_type_t device_type) {
-    memset(device_type, 0, sizeof(vs_device_type_t));
-    device_type[0] = 3;
+    vs_app_str_to_bytes(device_type, "TEST", VS_DEVICE_TYPE_SIZE);
 }
 
 //-----------------------------------------------------------------------------

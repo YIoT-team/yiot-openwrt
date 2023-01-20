@@ -24,13 +24,13 @@
 #include <yiot-littlefs.h>
 
 // ----------------------------------------------------------------------------
-static uint32_t _max_file_sz(vs_app_storage_type_t type) { return 4096; }
+static uint32_t _max_file_sz(vs_app_storage_type_t type) { return 10 * 1024; }
 
 // ----------------------------------------------------------------------------
 static uint32_t _flash_sz(vs_app_storage_type_t type) {
     switch (type) {
     case VS_APP_STORAGE_SLOTS: {
-        return 16 * 1024;
+        return 32 * 1024;
     }
 
     case VS_APP_STORAGE_TRUST_LIST: {
@@ -38,7 +38,7 @@ static uint32_t _flash_sz(vs_app_storage_type_t type) {
     }
 
     case VS_APP_STORAGE_SECBOX: {
-        return 32 * 1024;
+        return 16 * 1024;
     }
 
     default: {
