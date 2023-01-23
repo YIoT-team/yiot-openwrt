@@ -48,7 +48,9 @@ static vs_secmodule_impl_t *_secmodule_impl = NULL;
 int
 main(int argc, char *argv[]) {
     uint8_t license[YIOT_LICENSE_SZ_MAX];
+    uint8_t license_data[YIOT_LICENSE_SZ_MAX];
     uint16_t license_sz = 0;
+    uint16_t license_data_sz = 0;
     vs_provision_events_t provision_events = {NULL};
 
     // Implementation variables
@@ -98,9 +100,13 @@ main(int argc, char *argv[]) {
     //
     // ---------- Get license ----------
     //
-    STATUS_CHECK(vs_provision_license(license, YIOT_LICENSE_SZ_MAX, &license_sz),
+    STATUS_CHECK(vs_license_init(_secmodule_impl),
+                 "Cannot initialize license module");
+    STATUS_CHECK(vs_license_get(license, YIOT_LICENSE_SZ_MAX, &license_sz),
                  "Cannot load a license");
-    VS_LOG_INFO("License: %s\n", (const char *)license);
+    STATUS_CHECK(vs_license_plain_data(license, license_sz,
+                                       license_data, YIOT_LICENSE_SZ_MAX, &license_data_sz), "Cannot get plain data of a license");
+    VS_LOG_INFO("License: %s\n", (const char *)license_data);
 
 terminate:
 

@@ -30,6 +30,7 @@
 #include <virgil/iot/protocols/snap/cfg/cfg-server.h>
 #include <virgil/iot/protocols/snap/snap-structs.h>
 #include <virgil/iot/provision/provision-structs.h>
+#include <virgil/iot/provision/license.h>
 #include <virgil/iot/secmodule/secmodule.h>
 #include <virgil/iot/status_code/status_code.h>
 #include <virgil/iot/storage_hal/storage_hal.h>
