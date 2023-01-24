@@ -103,7 +103,13 @@ define Package/yiot-firmware-verifier/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/firmware-verifier/yiot-firmware-verifier $(1)/usr/bin/yiot-firmware-verifier
 endef
 
+define Package/yiot-license-processor/install
+	$(INSTALL_DIR) $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/license-processor/yiot-license-processor $(1)/usr/bin/yiot-license-processor
+endef
+
 $(eval $(call BuildPackage,libconverters))
 $(eval $(call BuildPackage,libyiot-openwrt))
 $(eval $(call BuildPackage,yiot-firmware-verifier))
+$(eval $(call BuildPackage,yiot-license-processor))
 $(eval $(call BuildPackage,yiot))
