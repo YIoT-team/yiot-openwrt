@@ -28,12 +28,17 @@
 #include <virgil/iot/secbox/secbox.h>
 #include <virgil/iot/session/session.h>
 
+#include <yiot-littlefs-hal.h>
+
 #include "init.h"
 
 static void
 _file_ver_info_cb(vs_file_version_t ver);
 
-static vs_provision_events_t _provision_event = {_file_ver_info_cb};
+static void
+_provision_update_cb_t(void);
+
+static vs_provision_events_t _provision_event = {_file_ver_info_cb, _provision_update_cb_t};
 
 // Dev name
 static vs_storage_element_id_t _device_name_storage_id = {0};
@@ -71,6 +76,19 @@ name_change_cb(void) {
                          (const uint8_t *)vs_snap_device_name(),
                          strnlen(vs_snap_device_name(), DEVICE_NAME_SZ_MAX));
     return res;
+}
+
+//-----------------------------------------------------------------------------
+static void
+_provision_update_cb_t(void) {
+    iot_flash_hw_sync();
+}
+
+//-----------------------------------------------------------------------------
+static vs_status_e
+_users_update_cb_t(void) {
+    iot_flash_hw_sync();
+    return VS_CODE_OK;
 }
 
 //-----------------------------------------------------------------------------
@@ -113,7 +131,7 @@ ks_iotkit_init(vs_device_manufacture_id_t manufacture_id,
     vs_status_e res = VS_CODE_ERR_INIT_SNAP;
     vs_status_e ret_code;
     uint8_t i = 1;
-    vs_snap_scrt_server_service_t scrt_server_cb = {0};
+    vs_snap_scrt_server_service_t scrt_server_cb = {_users_update_cb_t};
     VS_IOT_ASSERT(netif_impl);
     VS_IOT_ASSERT(netif_impl[0]);
 
@@ -131,7 +149,6 @@ ks_iotkit_init(vs_device_manufacture_id_t manufacture_id,
     }
 
     // SNAP module
-
     STATUS_CHECK(init_dev_name(), "Cannot init device name");
     STATUS_CHECK(vs_snap_init(netif_impl[0],
                               packet_preprocessor_cb,
@@ -207,6 +224,7 @@ ks_iotkit_deinit(void) {
 //-----------------------------------------------------------------------------
 static void
 _file_ver_info_cb(vs_file_version_t ver) {
+    iot_flash_hw_sync();
     vs_snap_info_set_tl_ver(ver);
 }
 

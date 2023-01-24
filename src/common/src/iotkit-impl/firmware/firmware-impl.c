@@ -35,7 +35,6 @@
 
 #include "common/iotkit-impl/storage/storage-nix-impl.h"
 #include "common/helpers/app-helpers.h"
-#include "common/helpers/app-storage.h"
 #include "common/helpers/file-io.h"
 
 #define NEW_APP_EXTEN ".new"
@@ -98,36 +97,6 @@ vs_firmware_install_append_data_hal(const void *data, uint16_t data_sz) {
 /******************************************************************************/
 static void
 _delete_bad_firmware(void) {
-    vs_firmware_descriptor_t desc;
-    vs_storage_op_ctx_t fw_storage_impl;
-    vs_storage_op_ctx_t slots_storage_impl;
-    vs_file_version_t ver;
-
-    vs_app_storage_init_impl(&fw_storage_impl, vs_app_firmware_dir(), VS_MAX_FIRMWARE_UPDATE_SIZE);
-    vs_app_storage_init_impl(&slots_storage_impl, vs_app_slots_dir(), VS_SLOTS_STORAGE_MAX_SIZE);
-
-    CHECK(VS_CODE_OK == vs_firmware_init(&fw_storage_impl,
-                                         vs_soft_secmodule_impl(&slots_storage_impl),
-                                         _manufacture_id,
-                                         _device_type,
-                                         &ver),
-          "Unable to initialize Firmware module");
-
-    if (VS_CODE_OK != vs_firmware_load_firmware_descriptor(_manufacture_id, _device_type, &desc)) {
-        VS_LOG_WARNING("Unable to obtain Firmware's descriptor");
-        goto terminate;
-    } else {
-        if (VS_CODE_OK != vs_firmware_delete_firmware(&desc)) {
-            VS_LOG_WARNING("Unable to delete bad firmware image");
-            goto terminate;
-        }
-    }
-
-    VS_LOG_INFO("Bad firmware has been deleted");
-
-terminate:
-    vs_firmware_deinit();
-    vs_soft_secmodule_deinit();
 }
 
 /******************************************************************************/

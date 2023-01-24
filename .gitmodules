@@ -1,3 +1,6 @@
 [submodule "src/core"]
 	path = src/core
 	url = https://github.com/YIoT-team/yiot-core.git
+[submodule "src/common/ext/filesystem/littlefs"]
+	path = src/common/ext/filesystem/littlefs
+	url = https://github.com/ARMmbed/littlefs.git

@@ -32,7 +32,6 @@
 #include <global-hal.h>
 #include <virgil/iot/logger/logger.h>
 #include <virgil/iot/macros/macros.h>
-#include "common/helpers/file-cache.h"
 
 static char _base_dir[FILENAME_MAX] = {0};
 
@@ -127,14 +126,6 @@ vs_files_get_len(const char *folder, const char *file_name) {
         return 0;
     }
 
-    // Cached read
-    if (0 == vs_file_cache_open(file_path)) {
-        res = vs_file_cache_get_len(file_path);
-        if (res > 0) {
-            return res;
-        }
-    }
-
     fp = fopen(file_path, "rb");
 
     if (fp) {
@@ -173,10 +164,6 @@ vs_files_sync(const char *folder, const char *file_name) {
         return false;
     }
 
-    if (vs_file_cache_is_enabled()) {
-        res = (0 == vs_file_cache_sync(file_path));
-    }
-
 terminate:
     return res;
 }
@@ -199,9 +186,7 @@ vs_files_write(const char *folder, const char *file_name, uint32_t offset, const
         return false;
     }
 
-    if (0 == vs_file_cache_open(file_path)) { // Cached write
-        return (0 == vs_file_cache_write(file_path, offset, data, data_sz)) ? true : false;
-    } else { // Real write file if cache is disabled or file not found
+    {
         fp = fopen(file_path, "rb");
         if (fp) {
             ssize_t f_sz;
@@ -252,7 +237,6 @@ vs_files_write(const char *folder, const char *file_name, uint32_t offset, const
                          strerror(errno));
             goto terminate;
         }
-        vs_file_cache_create(file_path, buf, new_file_sz);
 
     } else {
         VS_LOG_ERROR("Unable to open file %s. errno = %d (%s)", file_path, errno, strerror(errno));
@@ -292,14 +276,6 @@ vs_files_read(const char *folder,
         goto terminate;
     }
 
-    // Cached read
-    if (0 == vs_file_cache_open(file_path)) {
-        if (0 == vs_file_cache_read(file_path, offset, data, buf_sz, read_sz)) {
-            return true;
-        }
-    }
-
-    // Real read in case of cache is absent
     fp = fopen(file_path, "rb");
 
     if (fp) {
@@ -349,8 +325,6 @@ vs_files_remove(const char *folder, const char *file_name) {
     if (!_check_fio_and_path(folder, file_name, file_path)) {
         return false;
     }
-
-    vs_file_cache_close(file_path);
 
     remove(file_path);
 

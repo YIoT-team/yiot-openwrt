@@ -21,7 +21,7 @@
 #include <unistd.h>
 
 #include <common/helpers/app-helpers.h>
-#include <common/helpers/app-storage.h>
+#include <yiot-littlefs-storage.h>
 
 #include <virgil/iot/logger/logger.h>
 #include <virgil/iot/macros/macros.h>
@@ -279,7 +279,9 @@ main(int argc, char *argv[]) {
     if (!path) {
         path = "/var/yiot/pc";
     }
+#if 0
     STATUS_CHECK(vs_app_prepare_storage(path, tmp), "Cannot prepare storage");
+#endif
 
     vs_app_str_to_bytes(_manufacture_id, MANUFACTURE_ID, VS_DEVICE_MANUFACTURE_ID_SIZE);
     vs_app_str_to_bytes(_device_type, DEVICE_MODEL, VS_DEVICE_TYPE_SIZE);
@@ -289,11 +291,11 @@ main(int argc, char *argv[]) {
     //
 
     // TrustList storage
-    STATUS_CHECK(vs_app_storage_init_impl(&tl_storage_impl, vs_app_trustlist_dir(), VS_TL_STORAGE_MAX_PART_SIZE),
+    STATUS_CHECK(vs_app_storage_init_impl(&tl_storage_impl, VS_APP_STORAGE_TRUST_LIST),
                  "Cannot create TrustList storage");
 
     // Slots storage
-    STATUS_CHECK(vs_app_storage_init_impl(&slots_storage_impl, vs_app_slots_dir(), VS_SLOTS_STORAGE_MAX_SIZE),
+    STATUS_CHECK(vs_app_storage_init_impl(&slots_storage_impl, VS_APP_STORAGE_SLOTS),
                  "Cannot create TrustList storage");
 
     // Soft Security Module

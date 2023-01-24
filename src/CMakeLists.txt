@@ -28,6 +28,7 @@ set(KS_TARGET_VERSION "0.1.0")
 #   Options
 # ---------------------------------------------------------------------------
 option(BUILD_VERIFIER_ENABLE "Enable building of Firmware verifier app" ON)
+option(BUILD_LICENSE_PROCESSOR_ENABLE "Enable building of License processor app" ON)
 option(BUILD_PROVISIONER_ENABLE "Enable building of Device provisioner" ON)
 
 # ---------------------------------------------------------------------------
@@ -54,6 +55,13 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/common)
 # ---------------------------------------------------------------------------
 if (BUILD_VERIFIER_ENABLE)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/firmware-verifier)
+endif()
+
+# ---------------------------------------------------------------------------
+#	License processor application
+# ---------------------------------------------------------------------------
+if (BUILD_LICENSE_PROCESSOR_ENABLE)
+    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/license-processor)
 endif()
 
 # ---------------------------------------------------------------------------

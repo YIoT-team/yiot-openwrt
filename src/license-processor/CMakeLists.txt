@@ -1,5 +1,3 @@
-#!/bin/ash
-
 #  ────────────────────────────────────────────────────────────
 #                     ╔╗  ╔╗ ╔══╗      ╔════╗
 #                     ║╚╗╔╝║ ╚╣╠╝      ║╔╗╔╗║
@@ -16,35 +14,57 @@
 #                    ║║                         ║║
 #                    ╚╝                         ╚╝
 #
-#    Lead Maintainer:
+#    Lead Maintainer: Roman Kutashenko <kutashenko@gmail.com>
 #  ────────────────────────────────────────────────────────────
 
-set -e
+cmake_minimum_required(VERSION 3.11 FATAL_ERROR)
 
-echo "START: Network settings"
+include(GNUInstallDirs)
 
-echo "SCRIPT     : ${0}"
-echo "INTERFACE  : ${1}"
-echo "STATIC     : ${2}"
-echo "IP         : ${3}"
-echo "GATEWAY    : ${4}"
-echo "DNS        : ${5}"
-echo "MASK       : ${6}"
+project(license-processor VERSION 0.1.0 LANGUAGES C)
 
-mkdir -p /etc/yiot/network || true
+    #
+    #	License processor target
+    #
+    add_executable(yiot-license-processor)
 
-NET_INTERFACE="${1}"
-NET_MODE="${2}"
-NET_IPADDR="${3}"
-NET_GATEWAY="${4}"
-NET_DNS="${5}"
-NET_MASK="${6}"
+    #
+    #	Header/Source files
+    #
+    target_sources(yiot-license-processor
+             PRIVATE
 
-uci set network.lan.ipaddr="${NET_IPADDR}"
-uci set network.lan.netmask="${NET_MASK}"
-uci set network.lan.gateway="${NET_GATEWAY}"
-uci set network.lan.dns="${NET_DNS}"
+             #	Sources
+             ${CMAKE_CURRENT_LIST_DIR}/src/main.c
+            )
 
-/etc/init.d/network restart
+    #
+    #	Definitions
+    #
+    target_compile_definitions(yiot-license-processor
+            PRIVATE
+            )
 
-echo "END  : Network settings"
+    #
+    #   Include directories
+    #
+    target_include_directories(yiot-license-processor
+            PUBLIC
+            ${CMAKE_CURRENT_LIST_DIR}/include
+            )
+
+    #
+    #	Link libraries
+    #
+    target_link_libraries(yiot-license-processor
+            PUBLIC
+            yiot-openwrt
+            )
+
+    #
+    #   Install app
+    #
+    install(TARGETS yiot-license-processor
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+            )
+

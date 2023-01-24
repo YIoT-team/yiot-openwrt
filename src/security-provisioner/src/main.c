@@ -47,8 +47,8 @@
 
 // Platform-specific helpers
 #include "common/helpers/app-helpers.h" // Different helpers
-#include "common/helpers/app-storage.h" // Data Storage helpers
-#include "common/helpers/file-cache.h"  // File cache to speed-up file operations
+#include "yiot-littlefs-storage.h"      // Data Storage helpers
+#include <yiot-littlefs-hal.h>
 
 // High-level wrapper to simplify initialization/deinitialization
 #include "init.h"
@@ -88,21 +88,18 @@ main(int argc, char *argv[]) {
     ks_devinfo_device_type(device_type);     // Get device type
     ks_devinfo_device_serial(serial);        // Get device serial
 
+    // Set MTD device
+    if (argc > 1) {
+        iot_flash_set_device(argv[1]);
+    } else {
+        iot_flash_set_device("/dev/mtd0");
+    }
+
     // Initialize Logger module
     vs_logger_init(VS_LOGLEV_DEBUG);
 
     // Print title
     _print_title();
-
-    // Prepare local storage
-    vs_mac_addr_t tmp;
-    memset(&tmp, 0, sizeof(tmp));
-    char *path = getenv("YIOT_STORAGE");
-    if (!path) {
-        path = "/var/yiot/pc";
-    }
-    STATUS_CHECK(vs_app_prepare_storage(path, tmp), "Cannot prepare storage");
-    vs_file_cache_enable(true); // Enable cached file IO
 
     //
     // ---------- Create implementations ----------
@@ -113,16 +110,15 @@ main(int argc, char *argv[]) {
     netifs_impl[0] = vs_hal_netif_udp();              // Initialize UDP-based transport
 
     // TrustList storage
-    STATUS_CHECK(vs_app_storage_init_impl(&tl_storage_impl, vs_app_trustlist_dir(), VS_TL_STORAGE_MAX_PART_SIZE),
+    STATUS_CHECK(vs_app_storage_init_impl(&tl_storage_impl, VS_APP_STORAGE_TRUST_LIST),
                  "Cannot create TrustList storage");
 
     // Slots storage
-    STATUS_CHECK(vs_app_storage_init_impl(&slots_storage_impl, vs_app_slots_dir(), VS_SLOTS_STORAGE_MAX_SIZE),
+    STATUS_CHECK(vs_app_storage_init_impl(&slots_storage_impl, VS_APP_STORAGE_SLOTS),
                  "Cannot create TrustList storage");
 
     // Secbox storage
-    STATUS_CHECK(vs_app_storage_init_impl(&secbox_storage_impl, vs_app_secbox_dir(), VS_MAX_FIRMWARE_UPDATE_SIZE),
-                 "Cannot create Secbox storage");
+    STATUS_CHECK(vs_app_storage_init_impl(&secbox_storage_impl, VS_APP_STORAGE_SECBOX), "Cannot create Secbox storage");
 
     // Soft Security Module
     secmodule_impl = vs_soft_secmodule_impl(&slots_storage_impl);
@@ -172,6 +168,9 @@ terminate:
 
     VS_LOG_INFO("\n\n\n");
     VS_LOG_INFO("Terminating application ...");
+
+    // Synchronize flash
+    iot_flash_hw_sync();
 
     // De-initialize IoTKit internals
     ks_iotkit_deinit();
