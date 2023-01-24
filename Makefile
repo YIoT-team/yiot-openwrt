@@ -26,7 +26,7 @@ USE_SOURCE_DIR:=$(shell pwd)/src
 PKG_LICENSE:=BSD-2
 PKG_LICENSE_FILES:=
 
-PKG_MAINTAINER:=Roman Kutashenko <kutashenko@gmail.com>
+PKG_MAINTAINER:=Roman Kutashenko <kutashenko@iot.dev>
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/cmake.mk
@@ -55,6 +55,14 @@ define Package/yiot-firmware-verifier
   DEPENDS:=+libyiot-openwrt
 endef
 
+define Package/yiot-license-processor
+  SECTION:=yiot
+  CATEGORY:=YIoT License Processor
+  TITLE:=YIoT Firmware Verifier
+  MAINTAINER:=Roman Kutashenko <kutashenko@yiot.dev>
+  DEPENDS:=+libyiot-openwrt
+endef
+
 define Package/yiot
   SECTION:=yiot
   CATEGORY:=YIoT Applications
@@ -67,8 +75,13 @@ TARGET_CFLAGS += -I$(STAGING_DIR)/usr/include -fpie -ffunction-sections -fdata-s
 TARGET_LDFLAGS += -L$(STAGING_DIR)/usr/lib -pie -Wl,--gc-sections
 
 CMAKE_OPTIONS = \
-	-DYIOT_OPENWRT=ON \
-  -G Ninja
+	-DYIOT_OPENWRT=ON
+
+ifeq ($(YIOT_CMAKE_NINJA),1)
+  CMAKE_OPTIONS += -G Ninja
+else
+  CMAKE_OPTIONS += -G "Unix Makefiles"
+endif
 
 define Package/libconverters/install
 	$(INSTALL_DIR) $(1)/usr/lib
