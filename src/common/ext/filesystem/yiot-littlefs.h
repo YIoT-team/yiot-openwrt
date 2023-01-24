@@ -17,43 +17,26 @@
 //    Lead Maintainer: Roman Kutashenko <kutashenko@gmail.com>
 //  ────────────────────────────────────────────────────────────
 
-#ifndef VS_IOT_FILE_CACHE_H
-#define VS_IOT_FILE_CACHE_H
+#ifndef YIOT_LITTLEFS_H
+#define YIOT_LITTLEFS_H
 
-#include <stdint.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdlib.h>
-#include <sys/types.h>
+#include <lfs.h>
+#include <lfs_util.h>
+#include <virgil/iot/storage_hal/storage_hal.h>
 
 int
-vs_file_cache_enable(bool enable);
+vs_lfs_get_storage_impl(vs_storage_op_ctx_t *impl);
 
-bool
-vs_file_cache_is_enabled();
-
-int
-vs_file_cache_open(const char *file_name);
-
-int
-vs_file_cache_create(const char *file_name, const uint8_t *data, size_t data_sz);
-
-ssize_t
-vs_file_cache_get_len(const char *file_name);
-
-int
-vs_file_cache_read(const char *file_name, uint32_t offset, uint8_t *data, size_t buf_sz, size_t *read_sz);
-
-int
-vs_file_cache_write(const char *file_name, uint32_t offset, const uint8_t *data, size_t data_sz);
-
-int
-vs_file_cache_sync(const char *file_name);
+lfs_t *
+vs_lfs_storage_init(uint32_t base_addr, lfs_size_t sz);
 
 void
-vs_file_cache_close(const char *file_name);
+vs_lfs_delete_ctx(lfs_t *lfs);
 
-void
-vs_file_cache_clean(void);
+int
+vs_lfs_storage_erase(lfs_t *old_lfs);
 
-#endif // VS_IOT_FILE_CACHE_H
+size_t
+vs_lfs_storage_size(void);
+
+#endif // YIOT_LITTLEFS_H

@@ -26,7 +26,7 @@ USE_SOURCE_DIR:=$(shell pwd)/src
 PKG_LICENSE:=BSD-2
 PKG_LICENSE_FILES:=
 
-PKG_MAINTAINER:=Roman Kutashenko <kutashenko@gmail.com>
+PKG_MAINTAINER:=Roman Kutashenko <kutashenko@iot.dev>
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/cmake.mk
@@ -35,7 +35,7 @@ define Package/libconverters
   SECTION:=libs
   CATEGORY:=Libraries
   TITLE:=YIoT format converters
-  MAINTAINER:=Roman Kutashenko <kutashenko@yiot-dev.io>
+  MAINTAINER:=Roman Kutashenko <kutashenko@yiot.dev>
   DEPENDS:=+libstdcpp
 endef
 
@@ -43,7 +43,7 @@ define Package/libyiot-openwrt
   SECTION:=libs
   CATEGORY:=Libraries
   TITLE:=YIoT core libraries
-  MAINTAINER:=Roman Kutashenko <kutashenko@yiot-dev.io>
+  MAINTAINER:=Roman Kutashenko <kutashenko@yiot.dev>
   DEPENDS:=+libconverters
 endef
 
@@ -51,7 +51,15 @@ define Package/yiot-firmware-verifier
   SECTION:=yiot
   CATEGORY:=YIoT Applications
   TITLE:=YIoT Firmware Verifier
-  MAINTAINER:=Roman Kutashenko <kutashenko@yiot-dev.io>
+  MAINTAINER:=Roman Kutashenko <kutashenko@yiot.dev>
+  DEPENDS:=+libyiot-openwrt
+endef
+
+define Package/yiot-license-processor
+  SECTION:=yiot
+  CATEGORY:=YIoT License Processor
+  TITLE:=YIoT Firmware Verifier
+  MAINTAINER:=Roman Kutashenko <kutashenko@yiot.dev>
   DEPENDS:=+libyiot-openwrt
 endef
 
@@ -59,7 +67,7 @@ define Package/yiot
   SECTION:=yiot
   CATEGORY:=YIoT Applications
   TITLE:=YIoT Security provisioner
-  MAINTAINER:=Roman Kutashenko <kutashenko@yiot-dev.io>
+  MAINTAINER:=Roman Kutashenko <kutashenko@yiot.dev>
   DEPENDS:=+libyiot-openwrt
 endef
 
@@ -68,6 +76,12 @@ TARGET_LDFLAGS += -L$(STAGING_DIR)/usr/lib -pie -Wl,--gc-sections
 
 CMAKE_OPTIONS = \
 	-DYIOT_OPENWRT=ON
+
+ifeq ($(YIOT_CMAKE_NINJA),1)
+  CMAKE_OPTIONS += -G Ninja
+else
+  CMAKE_OPTIONS += -G "Unix Makefiles"
+endif
 
 define Package/libconverters/install
 	$(INSTALL_DIR) $(1)/usr/lib
