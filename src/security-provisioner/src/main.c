@@ -31,10 +31,6 @@
 // Queue for packets to be processed
 #include "common/iotkit-impl/packets-queue.h"
 
-// Platform-specific configurations
-#include <trust_list-config.h>
-#include <update-config.h>
-
 // Implementation Network interfaces
 #include "common/iotkit-impl/netif/netif-udp.h" // UDP networking
 
@@ -53,13 +49,21 @@
 // High-level wrapper to simplify initialization/deinitialization
 #include "init.h"
 
+
 static void
-_print_title(void);
+_print_title(const char *manufacturer_string,
+             const char *model_string,
+             const char *serial_string);
 
 //-----------------------------------------------------------------------------
 int
 main(int argc, char *argv[]) {
     int res = -1;
+    const char *mtd_device = NULL;
+    const char *netif = NULL;
+    const char *manufacturer_string = NULL;
+    const char *model_string = NULL;
+    const char *serial_string = NULL;
 
     // Holder of Network interfaces list
     vs_netif_t *netifs_impl[2] = {0};
@@ -84,22 +88,51 @@ main(int argc, char *argv[]) {
     vs_device_type_t device_type;
     vs_device_serial_t serial;
 
-    ks_devinfo_manufacturer(manufacture_id); // Get device manufacturer
-    ks_devinfo_device_type(device_type);     // Get device type
-    ks_devinfo_device_serial(serial);        // Get device serial
+    //
+    //  Parameters
+    //
 
-    // Set MTD device
-    if (argc > 1) {
-        iot_flash_set_device(argv[1]);
-    } else {
-        iot_flash_set_device("/dev/mtd0");
+    // Set MTD device to be used
+    mtd_device = vs_app_get_commandline_arg(argc, argv, "-m", "--mtd");
+    CHECK_RET(mtd_device, -1, "MTD device is not set. Example : --mtd /dev/mtd0");
+    iot_flash_set_device(mtd_device);
+
+    // Get network interface to be used
+    netif = vs_app_get_commandline_arg(argc, argv, "-i", "--interface");
+
+    // Get manufacturer
+    manufacturer_string = vs_app_get_commandline_arg(argc, argv, "-f", "--manufacturer");
+    if (!manufacturer_string) {
+        manufacturer_string = "YIoT-dev";
     }
+
+    // Get model
+    model_string = vs_app_get_commandline_arg(argc, argv, "-d", "--model");
+    if (!model_string) {
+        model_string = "TEST";
+    }
+
+    // Get serial
+    serial_string = vs_app_get_commandline_arg(argc, argv, "-s", "--serial");
+    if (!serial_string) {
+        serial_string = "0123";
+    }
+
+    vs_app_str_to_bytes(manufacture_id, manufacturer_string, VS_DEVICE_MANUFACTURE_ID_SIZE);
+    vs_app_str_to_bytes(device_type, model_string, VS_DEVICE_TYPE_SIZE);
+    vs_app_str_to_bytes(serial, serial_string, sizeof(vs_device_serial_t));
+
+    //
+    //  ~Parameters
+    //
 
     // Initialize Logger module
     vs_logger_init(VS_LOGLEV_DEBUG);
 
     // Print title
-    _print_title();
+    _print_title(manufacturer_string,
+                 model_string,
+                 serial_string);
 
     //
     // ---------- Create implementations ----------
@@ -107,7 +140,7 @@ main(int argc, char *argv[]) {
 
     // Network interface
     vs_packets_queue_init(vs_snap_default_processor); // Initialize Queue for incoming packets
-    netifs_impl[0] = vs_hal_netif_udp();              // Initialize UDP-based transport
+    netifs_impl[0] = vs_hal_netif_udp(netif);              // Initialize UDP-based transport
 
     // TrustList storage
     STATUS_CHECK(vs_app_storage_init_impl(&tl_storage_impl, VS_APP_STORAGE_TRUST_LIST),
@@ -186,20 +219,9 @@ terminate:
 
 //-----------------------------------------------------------------------------
 static void
-_print_title(void) {
-    vs_device_serial_t serial;
-    char str_manufacturer[VS_DEVICE_MANUFACTURE_ID_SIZE + 1];
-    char str_dev_type[VS_DEVICE_TYPE_SIZE + 1];
-    char str_dev_serial[VS_DEVICE_SERIAL_SIZE * 2 + 1];
-    vs_device_manufacture_id_t *manufacture = (vs_device_manufacture_id_t *)&str_manufacturer;
-    vs_device_type_t *dev_type = (vs_device_type_t *)&str_dev_type;
-    uint32_t in_out_len = VS_DEVICE_SERIAL_SIZE * 2 + 1;
-
-    ks_devinfo_manufacturer(*manufacture);
-    ks_devinfo_device_type(*dev_type);
-    ks_devinfo_device_serial(serial);
-    vs_app_data_to_hex(serial, VS_DEVICE_SERIAL_SIZE, (uint8_t *)str_dev_serial, &in_out_len);
-
+_print_title(const char *manufacturer_string,
+             const char *model_string,
+             const char *serial_string) {
     printf("\n\n");
     printf(" ──────────────────────────────────────────────────────────\n");
     printf("                   ╔╗  ╔╗ ╔══╗      ╔════╗                 \n");
@@ -219,9 +241,9 @@ _print_title(void) {
     printf("                                                           \n");
     printf("               Open-source Secure IoT platform             \n");
     printf(" ──────────────────────────────────────────────────────────\n");
-    printf("  Manufacture ID = \"%s\"\n", str_manufacturer);
-    printf("  Device type    = \"%s\"\n", str_dev_type);
-    printf("  Device serial  = \"%s\"\n", str_dev_type);
+    printf("  Manufacture ID = \"%s\"\n", manufacturer_string);
+    printf("  Device type    = \"%s\"\n", model_string);
+    printf("  Device serial  = \"%s\"\n", serial_string);
     printf(" ──────────────────────────────────────────────────────────\n\n");
 }
 

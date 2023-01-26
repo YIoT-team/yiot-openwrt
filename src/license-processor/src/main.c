@@ -17,7 +17,6 @@
 //    Lead Maintainer: Roman Kutashenko <kutashenko@gmail.com>
 //  ────────────────────────────────────────────────────────────
 
-#include <errno.h>
 #include <unistd.h>
 
 #include <common/helpers/app-helpers.h>
@@ -30,34 +29,49 @@
 #include <virgil/iot/base64/base64.h>
 #include <virgil/iot/firmware/firmware.h>
 #include <virgil/iot/secmodule/secmodule.h>
-#include <virgil/iot/secmodule/secmodule-helpers.h>
 #include <virgil/iot/vs-soft-secmodule/vs-soft-secmodule.h>
 
-#include <trust_list-config.h>
-#include <update-config.h>
-
 // Device parameters
-static vs_device_manufacture_id_t _manufacture_id;
-static vs_device_type_t _device_type;
-static const vs_key_type_e sign_rules_list[VS_FW_SIGNATURES_QTY] = VS_FW_SIGNER_TYPE_LIST;
-static char *_path_to_image = NULL;
 static vs_secmodule_impl_t *_secmodule_impl = NULL;
 
 // Maximum size of a command
-#define YIOT_COMMAND_SZ_MAX 64
+#define YIOT_COMMAND_SZ_MAX (64)
 
 // Maximum size of a license
 #define YIOT_LICENSE_SZ_MAX (10 * 1024)
 
+typedef enum {
+    YIOT_LIC_CMD_UNKNOWN,
+    YIOT_LIC_CMD_GET,
+    YIOT_LIC_CMD_SAVE,
+    YIOT_LIC_CMD_VERIFY
+} yiot_command_t;
+
+// Get command to work with licenses
+static yiot_command_t
+_get_command(int argc, char *argv[], uint8_t *param_buf, uint16_t buf_sz, uint16_t *param_sz);
+
+// Process 'Get' command
+static vs_status_e
+_cmd_get(void);
+
+// Process 'Save' command
+static vs_status_e
+_cmd_save(const uint8_t *license, uint16_t license_sz);
+
+// Process 'Verify' command
+static vs_status_e
+_cmd_verify(const uint8_t *license, uint16_t license_sz);
+
 // ----------------------------------------------------------------------------
 int
 main(int argc, char *argv[]) {
+    int res = -1;
     uint8_t license[YIOT_LICENSE_SZ_MAX];
-    uint8_t license_data[YIOT_LICENSE_SZ_MAX];
     uint16_t license_sz = 0;
-    uint16_t license_data_sz = 0;
-    int b64_decode_sz = 0;
     vs_provision_events_t provision_events = {NULL};
+    const char *mtd_device = NULL;
+    yiot_command_t command;
 
     // Implementation variables
     vs_storage_op_ctx_t tl_storage_impl;
@@ -66,19 +80,14 @@ main(int argc, char *argv[]) {
     // Initialize Logger module
     vs_logger_init(VS_LOGLEV_INFO);
 
-    const char *MANUFACTURE_ID = "YIoT-dev";
-    const char *DEVICE_MODEL = "TEST";
+    // Get command
+    command = _get_command(argc, argv, license, YIOT_LICENSE_SZ_MAX, license_sz);
+    CHECK_RET(command != YIOT_LIC_CMD_UNKNOWN, -3, "Cannot get command");
 
-    // Prepare local storage
-    // Set MTD device
-//    if (argc > 1) {
-//        iot_flash_set_device(argv[1]);
-//    } else {
-        iot_flash_set_device("/dev/mtd0");
-//    }
-
-    vs_app_str_to_bytes(_manufacture_id, MANUFACTURE_ID, VS_DEVICE_MANUFACTURE_ID_SIZE);
-    vs_app_str_to_bytes(_device_type, DEVICE_MODEL, VS_DEVICE_TYPE_SIZE);
+    // Set MTD device to be used
+    mtd_device = vs_app_get_commandline_arg(argc, argv, "-m", "--mtd");
+    CHECK_RET(mtd_device, -1, "MTD device is not set. Example : --mtd /dev/mtd0");
+    CHECK_RET(0 == iot_flash_set_device(mtd_device), -2, "Cannot set MTD device name");
 
     //
     // ---------- Create implementations ----------
@@ -108,58 +117,21 @@ main(int argc, char *argv[]) {
                  "Cannot initialize license module");
 
     //
-    // ---------- Get and verify license ----------
+    // ---------- Process commands ----------
     //
-    if (argc == 1) {
-        STATUS_CHECK(vs_license_get(license, YIOT_LICENSE_SZ_MAX, &license_sz),
-                     "Cannot load a license");
-        STATUS_CHECK(vs_license_plain_data(license, license_sz,
-                                           license_data, YIOT_LICENSE_SZ_MAX, &license_data_sz), "Cannot get plain data of a license");
-        VS_LOG_INFO("Stored License data: %s\n", (const char *)license_data);
+    switch (command) {
+    case YIOT_LIC_CMD_GET: {
+        res = VS_CODE_OK == _cmd_get();
+        break ;
     }
-
-    //
-    // ---------- Base64 decode of external license ----------
-    //
-    if (argc == 3) {
-        b64_decode_sz = YIOT_LICENSE_SZ_MAX;
-        CHECK(base64decode(argv[2],
-                           (int)VS_IOT_STRLEN(argv[2]),
-                           (uint8_t *)license,
-                           &b64_decode_sz),
-              "Cant't decode base64 license");
+    case YIOT_LIC_CMD_SAVE: {
+        res = VS_CODE_OK == _cmd_save(license, license_sz);
+        break ;
     }
-
-    //
-    // ---------- Verify external license ----------
-    //
-    if (argc == 3 && 0 == VS_IOT_STRNCMP(argv[1], "verify", YIOT_COMMAND_SZ_MAX)) {
-        STATUS_CHECK(vs_license_verify(license, b64_decode_sz),
-                     "Cannot verify a license");
-        STATUS_CHECK(vs_license_plain_data(license, b64_decode_sz,
-                                           license_data, YIOT_LICENSE_SZ_MAX, &license_data_sz), "Cannot get plain data of a license");
-        VS_LOG_INFO("Verified License data: %s\n", (const char *)license_data);
+    case YIOT_LIC_CMD_VERIFY: {
+        res = VS_CODE_OK == _cmd_verify(license, license_sz);
+        break ;
     }
-
-    //
-    // ---------- Save external license ----------
-    //
-    if (argc == 3 && 0 == VS_IOT_STRNCMP(argv[1], "save", YIOT_COMMAND_SZ_MAX)) {
-        STATUS_CHECK(vs_license_save(license, b64_decode_sz),
-                     "Cannot save a license");
-
-        // Sync flash data
-        iot_flash_hw_sync();
-
-        // Clean buffer
-        VS_IOT_MEMSET(license, 0, sizeof(license));
-
-        // Get license from flash
-        STATUS_CHECK(vs_license_get(license, YIOT_LICENSE_SZ_MAX, &license_sz),
-                     "Cannot load a license");
-        STATUS_CHECK(vs_license_plain_data(argv[2], VS_IOT_STRLEN(argv[2]),
-                                           license_data, YIOT_LICENSE_SZ_MAX, &license_data_sz), "Cannot get plain data of a license");
-        VS_LOG_INFO("Saved License data: %s\n", (const char *)license_data);
     }
 
 terminate:
@@ -169,6 +141,137 @@ terminate:
 
     // Deinit Soft Security Module
     vs_soft_secmodule_deinit();
+
+    return res;
+}
+
+// ----------------------------------------------------------------------------
+static yiot_command_t
+_get_command(int argc, char *argv[], uint8_t *param_buf, uint16_t buf_sz, uint16_t *param_sz) {
+    yiot_command_t res = YIOT_LIC_CMD_UNKNOWN;
+    const char *license_base64 = NULL;
+
+    // Check for 'Save' command
+    license_base64 = vs_app_get_commandline_arg(argc, argv, "-s", "--save");
+    if (license_base64 != NULL) {
+        res = YIOT_LIC_CMD_SAVE;
+    }
+
+    // Check for 'Verify' command
+    license_base64 = vs_app_get_commandline_arg(argc, argv, "-v", "--verify");
+    if (license_base64 != NULL) {
+        res = YIOT_LIC_CMD_VERIFY;
+    }
+
+    // 'Get' command if not other
+    if (res == YIOT_LIC_CMD_UNKNOWN) {
+        return YIOT_LIC_CMD_GET;
+    }
+
+    // Decode base64 license param
+    *param_sz = buf_sz;
+    CHECK_RET(base64decode(license_base64,
+                       (int)VS_IOT_STRLEN(license_base64),
+                           param_buf,
+                           param_sz),
+              YIOT_LIC_CMD_UNKNOWN,
+          "Cannot decode base64 license");
+
+    return res;
+}
+
+// ----------------------------------------------------------------------------
+static vs_status_e
+_cmd_get(void) {
+    vs_status_e res = VS_CODE_ERR_NOT_FOUND;
+    uint8_t license[YIOT_LICENSE_SZ_MAX];
+    uint16_t license_sz = 0;
+    uint8_t license_data[YIOT_LICENSE_SZ_MAX];
+    uint16_t license_data_sz = 0;
+
+    // Load license
+    if (VS_CODE_OK != vs_license_get(license, YIOT_LICENSE_SZ_MAX, &license_sz)) {
+        VS_LOG_ERROR("Cannot load a license");
+        return res;
+    }
+
+    // Get plain data of a license
+    if (VS_CODE_OK != vs_license_plain_data(license, license_sz,
+                                            license_data, YIOT_LICENSE_SZ_MAX, &license_data_sz)) {
+        VS_LOG_ERROR("Cannot get plain data of a license");
+        return res;
+    }
+
+    // Print plain data
+    VS_LOG_INFO("Stored License data: %s\n", (const char *)license_data);
+
+    return VS_CODE_OK;
+}
+
+// ----------------------------------------------------------------------------
+static vs_status_e
+_cmd_save(const uint8_t *license, uint16_t license_sz) {
+    vs_status_e res = VS_CODE_ERR_VERIFY;
+    uint8_t license_loaded[YIOT_LICENSE_SZ_MAX];
+    uint16_t license_loaded_sz = 0;
+    uint8_t license_data[YIOT_LICENSE_SZ_MAX];
+    uint16_t license_data_sz = 0;
+
+    // Verify a license
+    if (VS_CODE_OK != vs_license_verify(license, license_sz)) {
+        VS_LOG_ERROR("Cannot verify a license");
+        return res;
+    }
+
+    // Save a license
+    if (VS_CODE_OK != vs_license_save(license, license_sz)) {
+        VS_LOG_ERROR("Cannot save a license");
+        return res;
+    }
+
+    // Load license
+    if (VS_CODE_OK != vs_license_get(license_loaded, YIOT_LICENSE_SZ_MAX, &license_loaded_sz)) {
+        VS_LOG_ERROR("Cannot load a license");
+        return res;
+    }
+
+    // Get plain data of a license
+    if (VS_CODE_OK != vs_license_plain_data(license_loaded, license_loaded_sz,
+                                            license_data, YIOT_LICENSE_SZ_MAX, &license_data_sz)) {
+        VS_LOG_ERROR("Cannot get plain data of a license");
+        return res;
+    }
+
+    // Print plain data
+    VS_LOG_INFO("Stored License data: %s\n", (const char *)license_data);
+
+    return VS_CODE_OK;
+}
+
+// ----------------------------------------------------------------------------
+static vs_status_e
+_cmd_verify(const uint8_t *license, uint16_t license_sz) {
+    vs_status_e res = VS_CODE_ERR_VERIFY;
+    uint8_t license_data[YIOT_LICENSE_SZ_MAX];
+    uint16_t license_data_sz = 0;
+
+    // Verify a license
+    if (VS_CODE_OK != vs_license_verify(license, license_sz)) {
+        VS_LOG_ERROR("Cannot verify a license");
+        return res;
+    }
+
+    // Get plain data of a license
+    if (VS_CODE_OK != vs_license_plain_data(license, license_sz,
+                                            license_data, YIOT_LICENSE_SZ_MAX, &license_data_sz)) {
+        VS_LOG_ERROR("Cannot get plain data of a license");
+        return res;
+    }
+
+    // Print plain data
+    VS_LOG_INFO("Verified License data: %s\n", (const char *)license_data);
+
+    return VS_CODE_OK;
 }
 
 // ----------------------------------------------------------------------------
