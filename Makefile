@@ -59,8 +59,8 @@ endef
 
 define Package/yiot-license-processor
   SECTION:=yiot
-  CATEGORY:=YIoT License Processor
-  TITLE:=YIoT Firmware Verifier
+  CATEGORY:=YIoT Applications
+  TITLE:=YIoT License Processor
   MAINTAINER:=Roman Kutashenko <kutashenko@yiot.dev>
   DEPENDS:=+libyiot-openwrt
 endef

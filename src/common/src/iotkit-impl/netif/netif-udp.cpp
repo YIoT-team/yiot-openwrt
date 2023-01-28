@@ -222,7 +222,7 @@ _get_interface_bcast_addr(const char* name)
     strncpy(ifreq.ifr_name, name, IFNAMSIZ);
 
     if (ioctl(_udp_sock, SIOCGIFBRDADDR, &ifreq) != 0) {
-        fprintf(stderr, "Could not find interface named %s", name);
+        fprintf(stderr, "Could not find interface named %s\n", name);
         return INADDR_ANY;
     }
 

@@ -88,6 +88,9 @@ main(int argc, char *argv[]) {
     vs_device_type_t device_type;
     vs_device_serial_t serial;
 
+    // Initialize Logger module
+    vs_logger_init(VS_LOGLEV_CRITICAL);
+
     //
     //  Parameters
     //
@@ -125,9 +128,6 @@ main(int argc, char *argv[]) {
     //
     //  ~Parameters
     //
-
-    // Initialize Logger module
-    vs_logger_init(VS_LOGLEV_DEBUG);
 
     // Print title
     _print_title(manufacturer_string,
@@ -199,7 +199,6 @@ main(int argc, char *argv[]) {
 
 terminate:
 
-    VS_LOG_INFO("\n\n\n");
     VS_LOG_INFO("Terminating application ...");
 
     // Synchronize flash
@@ -239,7 +238,7 @@ _print_title(const char *manufacturer_string,
     printf("                  ║║                         ║║            \n");
     printf("                  ╚╝                         ╚╝            \n");
     printf("                                                           \n");
-    printf("               Open-source Secure IoT platform             \n");
+    printf("                     YIoT provision tool                   \n");
     printf(" ──────────────────────────────────────────────────────────\n");
     printf("  Manufacture ID = \"%s\"\n", manufacturer_string);
     printf("  Device type    = \"%s\"\n", model_string);
