@@ -32,6 +32,9 @@ static int _fd = -1;
 static char *_mtd_device = NULL;
 #define IOT_FLASH_SZ (64 * 1024)
 static uint8_t _cache[IOT_FLASH_SZ];
+static bool _use_mtd = false;
+
+#define MTD_DEV_PREFIX "/dev/mtd"
 
 // ----------------------------------------------------------------------------
 int iot_flash_set_device(const char *device) {
@@ -94,16 +97,67 @@ hw_iot_flash_erase(int offset, size_t count) {
 }
 
 // ----------------------------------------------------------------------------
-int
-iot_flash_init(struct lfs_config *lfs_cfg, lfs_size_t sz) {
-    if (!_mtd_device) {
-        return -1;
-    }
+static int
+_init_file(struct lfs_config *lfs_cfg, lfs_size_t sz) {
+    long file_sz;
 
-    mtd_info_t mtd_info;
-
+    // Check required data
+    CHECK_NOT_ZERO_RET(_mtd_device, -1);
     CHECK_NOT_ZERO_RET(lfs_cfg, -1);
 
+    // Open and get descriptor
+    if (-1 == _fd) {
+        _fd = open(_mtd_device, O_RDWR | O_CREAT);
+        if (-1 != _fd) {
+            file_sz = lseek(_fd, 0L, SEEK_END);
+
+            // Resize if required
+            if (file_sz < IOT_FLASH_SZ) {
+                if (hw_iot_flash_write(0, _cache, IOT_FLASH_SZ) < 0) {
+                    VS_LOG_CRITICAL("Allocate size on MTD flash emulator");
+                }
+            }
+
+            if (IOT_FLASH_SZ != hw_iot_flash_read(0, _cache, IOT_FLASH_SZ)) {
+                VS_LOG_CRITICAL("Cannot read MTD flash");
+            }
+        }
+    }
+
+    VS_LOG_DEBUG("MTD type: FILE %s", _mtd_device);
+    VS_LOG_DEBUG("MTD total size : %u bytes", IOT_FLASH_SZ);
+    VS_LOG_DEBUG("MTD erase size : %u bytes", 1024);
+
+    if (_fd > 0) {
+        lfs_cfg->block_size = 1024;
+        lfs_size_t block_count;
+        block_count = sz / lfs_cfg->block_size;
+        if (!block_count) {
+            block_count = 1;
+        }
+        lfs_cfg->read_size = 128;
+        lfs_cfg->prog_size = 1024;
+        lfs_cfg->block_count = block_count;
+        lfs_cfg->cache_size = lfs_cfg->block_size;
+        lfs_cfg->lookahead_size = 128;
+        lfs_cfg->block_cycles = 1000;
+
+        return VS_CODE_OK;
+    }
+
+    return VS_CODE_ERR_FILE;
+}
+
+// ----------------------------------------------------------------------------
+static int
+_init_mtd(struct lfs_config *lfs_cfg, lfs_size_t sz) {
+    mtd_info_t mtd_info;
+
+    // Check required data
+    CHECK_NOT_ZERO_RET(_mtd_device, -1);
+    CHECK_NOT_ZERO_RET(lfs_cfg, -1);
+
+    // Open and get descriptor
     if (-1 == _fd) {
         _fd = open(_mtd_device, O_RDWR);
         if (-1 != _fd) {
@@ -140,6 +194,23 @@ iot_flash_init(struct lfs_config *lfs_cfg, lfs_size_t sz) {
 
 // ----------------------------------------------------------------------------
 int
+iot_flash_init(struct lfs_config *lfs_cfg, lfs_size_t sz) {
+    // Check required data
+    CHECK_NOT_ZERO_RET(_mtd_device, -1);
+    CHECK_NOT_ZERO_RET(lfs_cfg, -1);
+
+    // Check if MTD device or file
+    _use_mtd = 0 == VS_IOT_MEMCMP(_mtd_device, MTD_DEV_PREFIX, VS_IOT_STRLEN(MTD_DEV_PREFIX));
+
+    if (_use_mtd) {
+        return _init_mtd(lfs_cfg, sz);
+    }
+
+    return _init_file(lfs_cfg, sz);
+}
+
+// ----------------------------------------------------------------------------
+int
 iot_flash_read(int offset, void *buf, size_t count) {
     VS_IOT_MEMCPY(buf, _cache + offset, count);
     return count;
@@ -169,7 +240,9 @@ iot_flash_hw_sync(void) {
     }
 
     if (0 != VS_IOT_MEMCMP(tmp, _cache, IOT_FLASH_SZ)) {
-        hw_iot_flash_erase(0, IOT_FLASH_SZ);
+        if (_use_mtd) {
+            hw_iot_flash_erase(0, IOT_FLASH_SZ);
+        }
         if (hw_iot_flash_write(0, _cache, IOT_FLASH_SZ) < 0) {
             VS_LOG_CRITICAL("Cannot sync MTD flash");
         }
