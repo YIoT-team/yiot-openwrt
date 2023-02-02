@@ -16,11 +16,11 @@ check_param() {
 
 start_service() {
     local ACTIVE="$(uci_get yiot.provision.active)"
-    local MTD_DEVICE="$(uci_get provision.yiot.mtd)"
-    local NETIF="$(uci_get system.provision.netif)"
-    local MANUFACTURER="$(uci_get provision.yiot.manufacturer)"
-    local MODEL="$(uci_get system.provision.model)"
-    local SERIAL="$(uci_get system.provision.serial)"
+    local MTD_DEVICE="$(uci_get yiot.provision.mtd)"
+    local NETIF="$(uci_get yiot.provision.netif)"
+    local MANUFACTURER="$(uci_get yiot.provision.manufacturer)"
+    local MODEL="$(uci_get yiot.provision.model)"
+    local SERIAL="$(uci_get yiot.provision.serial)"
 
     # Check if tool is active
     if [ "${ACTIVE}" == "0" ]; then
@@ -28,10 +28,10 @@ start_service() {
     fi
 
     # Check if MTD device is present
-    if [ ! -f "${MTD_DEVICE}" ]; then
-      echo "MTD device doesn't exist ${MTD_DEVICE}"
-      return
-    fi
+    # if [ ! -f "${MTD_DEVICE}" ]; then
+    #   echo "MTD device doesn't exist ${MTD_DEVICE}"
+    #   return
+    # fi
 
     # Check other parameters
     check_param "${NETIF}" "Network interface"
