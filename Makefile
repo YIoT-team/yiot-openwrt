@@ -109,7 +109,8 @@ endef
 
 define Package/yiot-license-processor/install
 	$(INSTALL_DIR) $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/license-processor/yiot-license-processor $(1)/usr/bin/yiot-license-processor
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/license-processor/yiot-license-processor $(1)/usr/bin/yiot-license-processor.base
+	$(INSTALL_BIN) ./src/license-processor/files/license $(1)/usr/bin/license
 endef
 
 $(eval $(call BuildPackage,libconverters))
