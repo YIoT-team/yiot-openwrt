@@ -201,9 +201,6 @@ terminate:
 
     VS_LOG_INFO("Terminating application ...");
 
-    // Synchronize flash
-    iot_flash_hw_sync();
-
     // De-initialize IoTKit internals
     ks_iotkit_deinit();
 
