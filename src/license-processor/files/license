@@ -1,7 +1,7 @@
 #!/bin/sh
 
 YIOT_LICENSE_BIN="/usr/bin/yiot-license-processor.base"
-local MTD_DEVICE="$(uci get yiot.provision.mtd)"
+MTD_DEVICE="$(uci get yiot.provision.mtd)"
 
 # Check if MTD device is present
 if [ x"${MTD_DEVICE}" == "x" ]; then
