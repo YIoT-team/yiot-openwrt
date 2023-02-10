@@ -193,9 +193,11 @@ _get_command(int argc, char *argv[], uint8_t *param_buf, uint16_t buf_sz, uint16
     }
 
     // Check for 'Verify' command
-    license_base64 = vs_app_get_commandline_arg(argc, argv, "-v", "--verify");
-    if (license_base64 != NULL) {
-        res = YIOT_LIC_CMD_VERIFY;
+    if (YIOT_LIC_CMD_UNKNOWN == res) {
+        license_base64 = vs_app_get_commandline_arg(argc, argv, "-v", "--verify");
+        if (license_base64 != NULL) {
+            res = YIOT_LIC_CMD_VERIFY;
+        }
     }
 
     // 'Get' command if not other
@@ -332,6 +334,12 @@ _cmd_save(uint8_t *license, uint16_t license_sz) {
     // Save a license
     if (VS_CODE_OK != vs_license_save(license, license_sz)) {
         VS_LOG_ERROR("Cannot save a license");
+        return res;
+    }
+
+    // Synchronize data storage
+    if (0 != iot_flash_hw_sync()) {
+        VS_LOG_ERROR("Cannot synchronize data storage");
         return res;
     }
 
