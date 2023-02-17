@@ -117,7 +117,7 @@ ks_snap_pc_command_cb(const vs_netif_t *netif, vs_mac_addr_t sender_mac, const c
     uint16_t json_sz = strnlen(json, PC_JSON_SZ_MAX);
     CHECK_RET(json_sz < PC_JSON_SZ_MAX, VS_CODE_ERR_INCORRECT_ARGUMENT, "Command request too long");
 
-    VS_LOG_DEBUG("New command: %s", json);
+    VS_LOG_INFO("New command: %s", json);
 
     bool res = false;
 
