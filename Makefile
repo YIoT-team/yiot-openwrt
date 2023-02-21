@@ -22,7 +22,7 @@ include $(TOPDIR)/rules.mk
 PKG_NAME:=yiot-openwrt
 PKG_RELEASE:=1
 
-YIOT_CMAKE_NINJA:=0
+YIOT_CMAKE_NINJA:=1
 
 USE_SOURCE_DIR:=$(shell pwd)/src
 PKG_LICENSE:=BSD-2
