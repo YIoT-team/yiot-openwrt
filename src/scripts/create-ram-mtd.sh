@@ -20,5 +20,5 @@
 #  ────────────────────────────────────────────────────────────
 
 rmmod mtdram || true
-modprobe mtdram total_size=64 erase_size=1
+modprobe mtdram total_size=128 erase_size=1
 mtdinfo --all

@@ -30,7 +30,7 @@
 
 static int _fd = -1;
 static char *_mtd_device = NULL;
-#define IOT_FLASH_SZ (64 * 1024)
+#define IOT_FLASH_SZ (128 * 1024)
 static uint8_t _cache[IOT_FLASH_SZ];
 static bool _use_mtd = false;
 
