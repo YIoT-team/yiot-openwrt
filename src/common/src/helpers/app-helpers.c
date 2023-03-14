@@ -31,6 +31,23 @@ static pthread_mutex_t _sleep_lock;
 static bool _need_restart = false;
 
 /******************************************************************************/
+bool
+vs_app_is_debug(int argc, char *argv[]) {
+    size_t pos;
+
+    if (!argv) {
+        return false;
+    }
+
+    for (pos = 0; pos < argc; ++pos) {
+        if (!strcmp(argv[pos], "--debug"))
+            return true;
+    }
+
+    return false;
+}
+
+/******************************************************************************/
 char *
 vs_app_get_commandline_arg(int argc, char *argv[], const char *shortname, const char *longname) {
     size_t pos;

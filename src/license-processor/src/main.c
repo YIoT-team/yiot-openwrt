@@ -223,8 +223,12 @@ _get_command(int argc, char *argv[], uint8_t *param_buf, uint16_t buf_sz, uint16
 static void
 _current_license_print(const char *prefix) {
     char tmp[sizeof(vs_device_manufacture_id_t) + 1];
-    // Print plain data
+
+    // Print full license data
     VS_LOG_INFO("%s:", prefix);
+    VS_LOG_INFO("Full            : %s", (const char *)cur_license);
+
+    // Print plain data
     VS_LOG_INFO("Data            : %s", (const char *)cur_license_data);
 
     // Print timestamp

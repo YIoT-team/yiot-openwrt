@@ -89,7 +89,11 @@ main(int argc, char *argv[]) {
     vs_device_serial_t serial;
 
     // Initialize Logger module
-    vs_logger_init(VS_LOGLEV_CRITICAL);
+    if (vs_app_is_debug(argc, argv)) {
+        vs_logger_init(VS_LOGLEV_DEBUG);
+    } else {
+        vs_logger_init(VS_LOGLEV_CRITICAL);
+    }
 
     //
     //  Parameters
