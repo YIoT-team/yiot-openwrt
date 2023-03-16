@@ -77,7 +77,7 @@ TARGET_LDFLAGS += -L$(STAGING_DIR)/usr/lib -pie -Wl,--gc-sections
 CMAKE_OPTIONS = \
 	-DYIOT_OPENWRT=ON
 
-ifeq ($(YIOT_CMAKE_NINJA),1)
+ifeq ($(PKG_USE_NINJA),1)
   CMAKE_OPTIONS += -G Ninja
 else
   CMAKE_OPTIONS += -G "Unix Makefiles"
