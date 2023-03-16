@@ -1,0 +1,12 @@
+#!/bin/sh
+
+YIOT_LICENSE_BIN="/usr/bin/yiot-license-processor.base"
+MTD_DEVICE="$(uci get yiot.provision.mtd)"
+
+# Check if MTD device is present
+if [ x"${MTD_DEVICE}" == "x" ]; then
+    echo "MTD device doesn't set"
+    return
+fi
+
+${YIOT_LICENSE_BIN} --mtd "${MTD_DEVICE}" $@

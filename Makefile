@@ -57,8 +57,8 @@ endef
 
 define Package/yiot-license-processor
   SECTION:=yiot
-  CATEGORY:=YIoT License Processor
-  TITLE:=YIoT Firmware Verifier
+  CATEGORY:=YIoT Applications
+  TITLE:=YIoT License Processor
   MAINTAINER:=Roman Kutashenko <kutashenko@yiot.dev>
   DEPENDS:=+libyiot-openwrt
 endef
@@ -83,6 +83,11 @@ else
   CMAKE_OPTIONS += -G "Unix Makefiles"
 endif
 
+define Build/Prepare
+	mkdir -p $(PKG_BUILD_DIR)
+	$(CP) -rf ./src/* $(PKG_BUILD_DIR)/
+endef
+
 define Package/libconverters/install
 	$(INSTALL_DIR) $(1)/usr/lib
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/common/yiot-core/yiot/common/iotkit/modules/crypto/converters/libconverters.so $(1)/usr/lib/libconverters.so
@@ -94,6 +99,8 @@ define Package/libyiot-openwrt/install
 endef
 
 define Package/yiot/install
+	$(INSTALL_DIR) $(1)/etc/init.d
+	$(INSTALL_BIN) ./src/security-provisioner/files/yiot.init $(1)/etc/init.d/yiot
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/security-provisioner/yiot $(1)/usr/bin/yiot
 endef
@@ -103,7 +110,14 @@ define Package/yiot-firmware-verifier/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/firmware-verifier/yiot-firmware-verifier $(1)/usr/bin/yiot-firmware-verifier
 endef
 
+define Package/yiot-license-processor/install
+	$(INSTALL_DIR) $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/license-processor/yiot-license-processor $(1)/usr/bin/yiot-license-processor.base
+	$(INSTALL_BIN) ./src/license-processor/files/license $(1)/usr/bin/license
+endef
+
 $(eval $(call BuildPackage,libconverters))
 $(eval $(call BuildPackage,libyiot-openwrt))
 $(eval $(call BuildPackage,yiot-firmware-verifier))
+$(eval $(call BuildPackage,yiot-license-processor))
 $(eval $(call BuildPackage,yiot))

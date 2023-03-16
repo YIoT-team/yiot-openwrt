@@ -42,7 +42,7 @@ extern "C" {
 #endif
 
 vs_netif_t*
-vs_hal_netif_udp(void);
+vs_hal_netif_udp(const char *default_netif);
 
 #ifdef __cplusplus
 }

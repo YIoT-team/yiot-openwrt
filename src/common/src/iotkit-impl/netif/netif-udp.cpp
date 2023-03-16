@@ -222,7 +222,7 @@ _get_interface_bcast_addr(const char* name)
     strncpy(ifreq.ifr_name, name, IFNAMSIZ);
 
     if (ioctl(_udp_sock, SIOCGIFBRDADDR, &ifreq) != 0) {
-        fprintf(stderr, "Could not find interface named %s", name);
+        fprintf(stderr, "Could not find interface named %s\n", name);
         return INADDR_ANY;
     }
 
@@ -531,8 +531,14 @@ _update_mac(void)
 
 //-----------------------------------------------------------------------------
 extern "C" vs_netif_t*
-vs_hal_netif_udp(void)
+vs_hal_netif_udp(const char *default_netif)
 {
+    // Set default interface
+    if (default_netif && default_netif[0]) {
+        _defaultNetif = std::string(default_netif);
+    }
+
+    // Fill structure with implementation
     _netif_udp_.user_data = NULL;
     _netif_udp_.init = _udp_init;
     _netif_udp_.deinit = _udp_deinit;
@@ -542,7 +548,7 @@ vs_hal_netif_udp(void)
 
     _ready = false;
     _connecting = false;
-    
+
     _update_mac();
     return &_netif_udp_;
 }
