@@ -85,6 +85,11 @@ else
   CMAKE_OPTIONS += -G "Unix Makefiles"
 endif
 
+define Build/Prepare
+	mkdir -p $(PKG_BUILD_DIR)
+	$(CP) -rf ./src/* $(PKG_BUILD_DIR)/
+endef
+
 define Package/libconverters/install
 	$(INSTALL_DIR) $(1)/usr/lib
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/common/yiot-core/yiot/common/iotkit/modules/crypto/converters/libconverters.so $(1)/usr/lib/libconverters.so
