@@ -129,7 +129,7 @@ _init_file(struct lfs_config *lfs_cfg, lfs_size_t sz) {
     VS_LOG_DEBUG("MTD erase size : %u bytes", 1024);
 
     if (_fd > 0) {
-        lfs_cfg->block_size = 1024;
+        lfs_cfg->block_size = 128;
         lfs_size_t block_count;
         block_count = sz / lfs_cfg->block_size;
         if (!block_count) {
@@ -173,7 +173,7 @@ _init_mtd(struct lfs_config *lfs_cfg, lfs_size_t sz) {
     VS_LOG_DEBUG("MTD erase size : %u bytes", mtd_info.erasesize);
 
     if (_fd > 0) {
-        lfs_cfg->block_size = 1024;//mtd_info.erasesize;
+        lfs_cfg->block_size = 128;
         lfs_size_t block_count;
         block_count = sz / lfs_cfg->block_size;
         if (!block_count) {
