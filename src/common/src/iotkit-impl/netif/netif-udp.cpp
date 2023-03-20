@@ -97,7 +97,7 @@ static std::string _defaultNetif = "eth0";
 
 #define UDP_BCAST_PORT (4100)
 
-#define RX_BUF_SZ (2048)
+#define RX_BUF_SZ (64 * 1024)
 
 //-----------------------------------------------------------------------------
 static bool
