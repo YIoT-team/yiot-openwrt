@@ -1,0 +1,12 @@
+#!/bin/sh
+
+YIOT_VERIFIER_BIN="/usr/bin/yiot-firmware-verifier.base"
+MTD_DEVICE="$(uci get yiot.provision.mtd)"
+
+# Check if MTD device is present
+if [ x"${MTD_DEVICE}" == "x" ]; then
+    echo "MTD device doesn't set"
+    return
+fi
+
+${YIOT_VERIFIER_BIN} --mtd "${MTD_DEVICE}" $@

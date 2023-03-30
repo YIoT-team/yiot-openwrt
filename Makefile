@@ -107,7 +107,8 @@ endef
 
 define Package/yiot-firmware-verifier/install
 	$(INSTALL_DIR) $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/firmware-verifier/yiot-firmware-verifier $(1)/usr/bin/yiot-firmware-verifier
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/firmware-verifier/yiot-firmware-verifier $(1)/usr/bin/yiot-firmware-verifier.base
+	$(INSTALL_BIN) ./src/firmware-verifier/files/firmware-verifier $(1)/usr/bin/firmware-verifier
 endef
 
 define Package/yiot-license-processor/install
