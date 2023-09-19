@@ -520,7 +520,9 @@ _update_mac(void)
                 &bytes[4],
                 &bytes[5])
             != ETH_ADDR_LEN) {
-            throw std::runtime_error(std::string("Invalid MAC address"));
+            // throw std::runtime_error(std::string("Invalid MAC address"));
+            VS_LOG_DEBUG("Invalid MAC address. Use default 02:02:02:02:02:02");
+            return;
         }
 
         for (int i = 0; i < ETH_ADDR_LEN; i++) {
