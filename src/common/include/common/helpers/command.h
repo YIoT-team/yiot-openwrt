@@ -101,7 +101,7 @@ public:
             ::close(outfd[READ_END]); // Child does not read from stdout
             ::close(errfd[READ_END]); // Child does not read from stderr
 
-            ::execl("/bin/bash", "bash", "-c", Command.c_str(), nullptr);
+            ::execl("/bin/sh", "sh", "-c", Command.c_str(), nullptr);
             ::exit(EXIT_SUCCESS);
         }
 
