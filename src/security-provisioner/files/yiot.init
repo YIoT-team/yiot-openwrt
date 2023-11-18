@@ -22,6 +22,13 @@ start_service() {
     local MANUFACTURER="$(uci_get yiot.provision.manufacturer)"
     local MODEL="$(uci_get yiot.provision.model)"
     local SERIAL="$(uci_get yiot.provision.serial)"
+    local DEBUG="$(uci_get yiot.provision.debug)"
+    local SUBNET="$(uci_get yiot.provision.subnet)"
+
+    DEBUG_PARAM=""
+    if [ "${DEBUG}" == "1" ]; then
+        DEBUG_PARAM="--debug"
+    fi 
 
     # Check if tool is active
     if [ "${ACTIVE}" == "0" ]; then
@@ -44,7 +51,10 @@ start_service() {
 
     procd_open_instance
     procd_set_param respawn
-    procd_set_param command /bin/sh -c "${YIOT_BIN} --mtd ${MTD_DEVICE} \
+    if [ z"${SUBNET}" != "z" ]; then
+        procd_set_param env VS_BCAST_SUBNET_ADDR="${SUBNET}"
+    fi
+    procd_set_param command /bin/sh -c "${YIOT_BIN} ${DEBUG_PARAM} --mtd ${MTD_DEVICE} \
                                           --interface ${NETIF} \
                                           --manufacturer ${MANUFACTURER} \
                                           --model ${MODEL} \
