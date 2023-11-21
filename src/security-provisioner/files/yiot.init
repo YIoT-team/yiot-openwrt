@@ -47,6 +47,11 @@ start_service() {
     check_param "${MODEL}" "Model"
     check_param "${SERIAL}" "Serial number"
 
+    SUBNET_DETECTOR="/opt/yiot/pc/scripts/get-subnet.sh"
+    if [ -f "${SUBNET_DETECTOR}" ]; then
+        SUBNET=$(${SUBNET_DETECTOR})
+    fi
+
     echo "Starting YIoT Security provisioning"
 
     procd_open_instance
