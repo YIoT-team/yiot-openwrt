@@ -114,7 +114,7 @@ public:
         int status = 0;
         ::waitpid(pid, &status, 0);
 
-        std::array<char, 256> buffer;
+        std::array<char, 2048> buffer;
 
         ssize_t bytes = 0;
         do {
