@@ -103,11 +103,14 @@ define Package/yiot/install
 	$(INSTALL_BIN) ./src/security-provisioner/files/yiot.init $(1)/etc/init.d/yiot
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/security-provisioner/yiot $(1)/usr/bin/yiot
+	$(INSTALL_DIR) $(1)/opt/yiot/pc/scripts
+	$(CP) -L ./src/security-provisioner/scripts/* $(1)/opt/yiot/pc/scripts/
 endef
 
 define Package/yiot-firmware-verifier/install
 	$(INSTALL_DIR) $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/firmware-verifier/yiot-firmware-verifier $(1)/usr/bin/yiot-firmware-verifier
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/firmware-verifier/yiot-firmware-verifier $(1)/usr/bin/yiot-firmware-verifier.base
+	$(INSTALL_BIN) ./src/firmware-verifier/files/firmware-verifier $(1)/usr/bin/firmware-verifier
 endef
 
 define Package/yiot-license-processor/install

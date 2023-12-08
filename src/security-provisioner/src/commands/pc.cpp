@@ -18,8 +18,16 @@
 //  ────────────────────────────────────────────────────────────
 
 #include <arpa/inet.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <net/if.h>
+#include <sys/ioctl.h>
 
 #include <iostream>
+#include <fstream>
+#include <string>
 
 #include "common/helpers/command.h"
 #include "common/helpers/settings.h"
@@ -33,6 +41,49 @@
 
 static KSTimer _processingDelayer;
 static const auto kDelayMs = std::chrono::milliseconds(200);
+static const auto kVersionFile = "/etc/version";
+
+//-----------------------------------------------------------------------------
+static std::string 
+get_interface_ip(const std::string &interface_name) {
+    int sockfd;
+    struct ifreq ifr;
+    const std::string _empty_ip("0.0.0.0"); 
+
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+
+    if (sockfd < 0) {
+        return _empty_ip;
+    }
+
+    ifr.ifr_addr.sa_family = AF_INET;
+    strncpy(ifr.ifr_name, interface_name.c_str(), IFNAMSIZ-1);
+
+    if (ioctl(sockfd, SIOCGIFADDR, &ifr) < 0) {
+        perror("ioctl");
+        close(sockfd);
+        return _empty_ip;
+    }
+
+    close(sockfd);
+
+    struct sockaddr_in *ip = (struct sockaddr_in*)&ifr.ifr_addr;
+
+    return std::string(inet_ntoa(ip->sin_addr));
+}
+
+//-----------------------------------------------------------------------------
+static std::string
+get_version() {
+    std::string version;
+    std::ifstream inputFile(kVersionFile);
+
+    if (inputFile.is_open()) {
+        std::getline(inputFile, version);
+        inputFile.close();
+    }
+    return version;
+}
 
 //-----------------------------------------------------------------------------
 vs_status_e
@@ -42,12 +93,11 @@ ks_snap_pc_get_info_cb(const vs_netif_t *netif, char *state, const uint16_t stat
     CHECK_NOT_ZERO_RET(state_buf_sz, VS_CODE_ERR_ZERO_ARGUMENT);
 
     nlohmann::json stateJson;
-    stateJson["type"] = 3; // TODO: Get this value from common file
+    stateJson["type"] = 5; // TODO: Get this value from common file
     stateJson["command"] = "info";
-    stateJson["inet"] = false;
-    stateJson["wifi"] = "sta";
-    stateJson["wifi_ipv4"] = "10.220.0.7";
-    stateJson["eth_ipv4"] = "192.168.0.20";
+    stateJson["br_lan"] = get_interface_ip("br-lan");
+    stateJson["br_lan24"] = get_interface_ip("br-lan24");
+    stateJson["version"] = get_version();
 
     auto jsonStr = stateJson.dump();
 
@@ -94,13 +144,14 @@ ks_snap_pc_command_cb(const vs_netif_t *netif, vs_mac_addr_t sender_mac, const c
 
         res = _processingDelayer.add(kDelayMs, [netif, sender_mac, commandStr]() -> void {
             Command cmd;
-            cmd.Command = "bash -c '" + commandStr + "'";
+            cmd.Command = commandStr;
             cmd.execute();
 
             // TODO: Remove it
-            std::cout << cmd.StdOut;
-            std::cerr << cmd.StdErr;
-            std::cout << "Exit Status: " << cmd.ExitStatus << "\n";
+            std::cout << "COMMAND     : |" << cmd.Command << "|\n";
+            std::cout << "STDOUT      : |" << cmd.StdOut << "|\n";
+            std::cerr << "STDERR      : |" << cmd.StdErr << "|\n";
+            std::cout << "Exit Status : |" << cmd.ExitStatus << "|\n";
             // ~TODO: Remove it
 
             bool is_ok = 0 == cmd.ExitStatus;
@@ -110,10 +161,14 @@ ks_snap_pc_command_cb(const vs_netif_t *netif, vs_mac_addr_t sender_mac, const c
             memset(state, 0, PC_JSON_SZ_MAX);
             uint16_t state_sz;
 
+#if 0
             if (VS_CODE_OK != ks_snap_pc_get_info_cb(netif, state, PC_JSON_SZ_MAX, &state_sz)) {
                 VS_LOG_WARNING("Cannot get PC state");
                 is_ok = false;
             }
+#endif
+
+            strncpy(state, cmd.StdOut.c_str(), PC_JSON_SZ_MAX - 1);
 
             // Send response after complete processing
             if (VS_CODE_OK != vs_snap_send_response(netif,
@@ -123,8 +178,8 @@ ks_snap_pc_command_cb(const vs_netif_t *netif, vs_mac_addr_t sender_mac, const c
                                                     VS_PC_PCMD,
                                                     is_ok,
                                                     reinterpret_cast<uint8_t *>(&state),
-                                                    sizeof(state))) {
-                VS_LOG_WARNING("Cannot initialize RPi.");
+                                                    strnlen(state, PC_JSON_SZ_MAX - 1) + 1)) {
+                VS_LOG_WARNING("Cannot send response.");
             }
         });
     } catch (...) {
