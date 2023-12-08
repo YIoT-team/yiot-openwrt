@@ -57,8 +57,8 @@ endef
 
 define Package/yiot-license-processor
   SECTION:=yiot
-  CATEGORY:=YIoT License Processor
-  TITLE:=YIoT Firmware Verifier
+  CATEGORY:=YIoT Applications
+  TITLE:=YIoT License Processor
   MAINTAINER:=Roman Kutashenko <kutashenko@yiot.dev>
   DEPENDS:=+libyiot-openwrt
 endef
@@ -77,11 +77,16 @@ TARGET_LDFLAGS += -L$(STAGING_DIR)/usr/lib -pie -Wl,--gc-sections
 CMAKE_OPTIONS = \
 	-DYIOT_OPENWRT=ON
 
-ifeq ($(YIOT_CMAKE_NINJA),1)
+ifeq ($(PKG_USE_NINJA),1)
   CMAKE_OPTIONS += -G Ninja
 else
   CMAKE_OPTIONS += -G "Unix Makefiles"
 endif
+
+define Build/Prepare
+	mkdir -p $(PKG_BUILD_DIR)
+	$(CP) -rf ./src/* $(PKG_BUILD_DIR)/
+endef
 
 define Package/libconverters/install
 	$(INSTALL_DIR) $(1)/usr/lib
@@ -94,16 +99,28 @@ define Package/libyiot-openwrt/install
 endef
 
 define Package/yiot/install
+	$(INSTALL_DIR) $(1)/etc/init.d
+	$(INSTALL_BIN) ./src/security-provisioner/files/yiot.init $(1)/etc/init.d/yiot
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/security-provisioner/yiot $(1)/usr/bin/yiot
+	$(INSTALL_DIR) $(1)/opt/yiot/pc/scripts
+	$(CP) -L ./src/security-provisioner/scripts/* $(1)/opt/yiot/pc/scripts/
 endef
 
 define Package/yiot-firmware-verifier/install
 	$(INSTALL_DIR) $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/firmware-verifier/yiot-firmware-verifier $(1)/usr/bin/yiot-firmware-verifier
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/firmware-verifier/yiot-firmware-verifier $(1)/usr/bin/yiot-firmware-verifier.base
+	$(INSTALL_BIN) ./src/firmware-verifier/files/firmware-verifier $(1)/usr/bin/firmware-verifier
+endef
+
+define Package/yiot-license-processor/install
+	$(INSTALL_DIR) $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/license-processor/yiot-license-processor $(1)/usr/bin/yiot-license-processor.base
+	$(INSTALL_BIN) ./src/license-processor/files/license $(1)/usr/bin/license
 endef
 
 $(eval $(call BuildPackage,libconverters))
 $(eval $(call BuildPackage,libyiot-openwrt))
 $(eval $(call BuildPackage,yiot-firmware-verifier))
+$(eval $(call BuildPackage,yiot-license-processor))
 $(eval $(call BuildPackage,yiot))

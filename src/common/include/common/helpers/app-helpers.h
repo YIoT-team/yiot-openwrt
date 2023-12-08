@@ -21,6 +21,9 @@
 #define VS_IOT_APP_HELPERS_H
 
 #include <virgil/iot/protocols/snap.h>
+bool
+vs_app_is_debug(int argc, char *argv[]);
+
 char *
 vs_app_get_commandline_arg(int argc, char *argv[], const char *shortname, const char *longname);
 
