@@ -174,7 +174,7 @@ _init_mtd(struct lfs_config *lfs_cfg, lfs_size_t sz) {
     VS_LOG_DEBUG("MTD erase size : %u bytes", mtd_info.erasesize);
 
     if (mtd_info.erasesize > _erase_sz) {
-        _erase_sz = mtd_info.erasesize
+        _erase_sz = mtd_info.erasesize;
     }
 
     if (_fd > 0) {
