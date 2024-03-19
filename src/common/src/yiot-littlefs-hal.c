@@ -33,6 +33,7 @@ static char *_mtd_device = NULL;
 #define IOT_FLASH_SZ (64 * 1024)
 static uint8_t _cache[IOT_FLASH_SZ];
 static bool _use_mtd = false;
+static uint32_t _erase_sz = IOT_FLASH_SZ;
 
 #define MTD_DEV_PREFIX "/dev/mtd"
 
@@ -172,6 +173,10 @@ _init_mtd(struct lfs_config *lfs_cfg, lfs_size_t sz) {
     VS_LOG_DEBUG("MTD total size : %u bytes", mtd_info.size);
     VS_LOG_DEBUG("MTD erase size : %u bytes", mtd_info.erasesize);
 
+    if (mtd_info.erasesize > _erase_sz) {
+        _erase_sz = mtd_info.erasesize
+    }
+
     if (_fd > 0) {
         lfs_cfg->block_size = 128;
         lfs_size_t block_count;
@@ -241,7 +246,7 @@ iot_flash_hw_sync(void) {
 
     if (0 != VS_IOT_MEMCMP(tmp, _cache, IOT_FLASH_SZ)) {
         if (_use_mtd) {
-            hw_iot_flash_erase(0, IOT_FLASH_SZ);
+            hw_iot_flash_erase(0, _erase_sz);
         }
         if (hw_iot_flash_write(0, _cache, IOT_FLASH_SZ) < 0) {
             VS_LOG_CRITICAL("Cannot sync MTD flash");
