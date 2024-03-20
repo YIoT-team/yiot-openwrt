@@ -58,12 +58,8 @@ hw_iot_flash_read(int offset, void *buf, size_t count) {
     CHECK_NOT_ZERO(buf);
     CHECK(offset >= 0, "MTD offset is less than zero");
 
-    VS_LOG_DEBUG(">>> READ");
-
     CHECK(offset == lseek(_fd, offset, SEEK_SET), "MTD seek error");
     CHECK(count == read(_fd, buf, count), "MTD read error");
-
-    VS_LOG_DEBUG("<<< READ");
 
     res = count;
 terminate:
@@ -77,13 +73,9 @@ hw_iot_flash_write(int offset, void *buf, size_t count) {
     CHECK_NOT_ZERO(buf);
     CHECK(offset >= 0, "MTD offset is less than zero");
 
-    VS_LOG_DEBUG(">>> WRITE");
-
     CHECK(offset == lseek(_fd, offset, SEEK_SET), "MTD seek error");
     CHECK(count == write(_fd, buf, count), "MTD write error");
     fsync(_fd);
-
-    VS_LOG_DEBUG("<<< WRITE");
 
     res = count;
 terminate:
@@ -96,15 +88,11 @@ hw_iot_flash_erase(int offset, size_t count) {
     int res;
     erase_info_t ei;
 
-    VS_LOG_DEBUG(">>> ERASE");
-
     ei.start = offset;
     ei.length = count;
 
     ioctl(_fd, MEMUNLOCK, &ei);
     res = ioctl(_fd, MEMERASE, &ei);
-
-    VS_LOG_DEBUG("<<< ERASE");
 
     return (res == -1) ? -1 : 0;
 }
