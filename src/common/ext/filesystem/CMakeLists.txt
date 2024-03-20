@@ -30,10 +30,10 @@ option(LFS_NO_MALLOC "Disable dynamic allocation" OFF)
 option(LFS_NO_ASSERT "Disable assertion" OFF)
 
 # log message options
-option(LFS_NO_DEBUG "Disable debug messages" OFF)
-option(LFS_NO_WARN "Disable warning messages" OFF)
+option(LFS_NO_DEBUG "Disable debug messages" ON)
+option(LFS_NO_WARN "Disable warning messages" ON)
 option(LFS_NO_ERROR "Disable error message" OFF)
-option(LFS_YES_TRACE "Enable trace messages" ON)
+option(LFS_YES_TRACE "Enable trace messages" OFF)
 
 #   littlefs library config
 set(LFS_NAME_MAX 65 CACHE STRING "Maximum name size in bytes")
