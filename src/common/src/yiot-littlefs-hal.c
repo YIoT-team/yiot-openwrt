@@ -142,14 +142,14 @@ _init_file(struct lfs_config *lfs_cfg, lfs_size_t sz) {
     VS_LOG_DEBUG("MTD erase size : %u bytes", 1024);
 
     if (_fd > 0) {
-        lfs_cfg->block_size = 128;
+        lfs_cfg->block_size = 1024;
         lfs_size_t block_count;
         block_count = sz / lfs_cfg->block_size;
         if (!block_count) {
             block_count = 1;
         }
         lfs_cfg->read_size = 128;
-        lfs_cfg->prog_size = 1024;
+        lfs_cfg->prog_size = lfs_cfg->block_size;
         lfs_cfg->block_count = block_count;
         lfs_cfg->cache_size = lfs_cfg->block_size;
         lfs_cfg->lookahead_size = 128;
@@ -190,7 +190,7 @@ _init_mtd(struct lfs_config *lfs_cfg, lfs_size_t sz) {
     }
 
     if (_fd > 0) {
-        lfs_cfg->block_size = 128;
+        lfs_cfg->block_size = mtd_info.writesize;
         lfs_size_t block_count;
         block_count = sz / lfs_cfg->block_size;
         if (!block_count) {
