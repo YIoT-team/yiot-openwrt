@@ -42,6 +42,19 @@
 static KSTimer _processingDelayer;
 static const auto kDelayMs = std::chrono::milliseconds(200);
 static const auto kVersionFile = "/etc/version";
+static std::string _model;
+
+//-----------------------------------------------------------------------------
+vs_status_e
+ks_snap_pc_set_model(const char *model) {
+    if (!model || !model[0]) {
+        return VS_CODE_ERR_ZERO_ARGUMENT;
+    }
+
+    _model = std::string(model);
+
+    return VS_CODE_OK;
+}
 
 //-----------------------------------------------------------------------------
 static std::string 
@@ -98,6 +111,7 @@ ks_snap_pc_get_info_cb(const vs_netif_t *netif, char *state, const uint16_t stat
     stateJson["br_lan"] = get_interface_ip("br-lan");
     stateJson["br_lan24"] = get_interface_ip("br-lan24");
     stateJson["version"] = get_version();
+    stateJson["model"] = _model;
 
     auto jsonStr = stateJson.dump();
 

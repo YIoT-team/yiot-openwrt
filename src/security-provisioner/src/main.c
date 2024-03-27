@@ -138,6 +138,9 @@ main(int argc, char *argv[]) {
                  model_string,
                  serial_string);
 
+    // Set model info to SNAP::_PC_
+    ks_snap_pc_set_model(model_string);
+
     //
     // ---------- Create implementations ----------
     //
